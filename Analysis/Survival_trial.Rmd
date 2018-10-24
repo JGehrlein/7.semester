@@ -1,0 +1,54 @@
+---
+title: "Survival"
+author: "Jonas Gehrlein"
+date: "24 okt 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival) 
+library(here)
+library(survminer)
+```
+code for fitting Kaplan-Meier and log-rank test and for displaying 
+survival curves for each type of media
+
+```{r}
+here()
+data <- read.table(here('data','Trial_worm.csv'), header = TRUE, sep = ";", dec = ",")
+head(data)
+```
+
+here() should show that your position is in the folder 7.semester else select the active project to be 7.semester in the upper right corner. 
+
+Or make a new .Rproj file in the folder 7.semester. There is a problem with the numbers of the worms so we change that with col.names()
+```{r}
+colnames(data)<-c('worm_nr',"Time","status","Replicate","media")
+head(data)
+```
+
+Then we create a survival object with the survival package and make a kaplan-meier curve
+```{r}
+data$Survobj <- with(data,Surv(data$Time, event = data$status))
+km <- survfit(Survobj ~ media, data = data,conf.type = "log-log")
+plot(km, col = c("blue","red") ) 
+legend("bottomleft",legend = c("FG20","OP50" ), col = c("blue","red"), lwd=1)
+```
+
+Now we test for difference between the curves with both log-rank and gehan-wilcoxon
+
+```{r}
+survdiff(Survobj ~media, data = data, rho = 0) 
+survdiff(Survobj ~media, data = data, rho = 1) 
+```
+
+Which both don`t find a significant difference between the groups But we can make a nicer survival curve with a different package survminer and add readable confidence intervals
+
+```{r}
+ggsurvplot(km,data = data, conf.int = TRUE, ggtheme = theme_bw(),
+           risk.table = 0.25)
+```
+
+Which shows that the problem is the uncertainty in OP50 because of not enough samples
+
