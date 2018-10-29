@@ -1,0 +1,66 @@
+---
+title: "Analysis_ramping"
+author: "Jonas Gehrlein"
+date: "29 okt 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival) 
+library(here)
+library(survminer)
+```
+code for fitting Kaplan-Meier and log-rank test and for displaying 
+survival curves for each type of media
+
+```{r}
+here()
+data <- read.table(here('data','Ramp_9days.csv'), header = TRUE, sep = ";", dec = ",")
+head(data)
+data <- data[complete.cases(data),]
+```
+
+here() should show that your position is in the folder 7.semester else either download
+7.semester from github again or create a .Rproj file in the folder on your computer
+One fly died from water entering the tube and is marked NA so it is removed.
+Or make a new .Rproj file in the folder 7.semester. There is a problem with the numbers of the  so we change that with col.names()
+```{r}
+colnames(data)<-c('ID',"Code","Ctmax","Temp")
+head(data)
+```
+We then compare the two acclimation temperatures first with a boxplot
+```{r}
+boxplot(data$Ctmax ~ data$Temp)
+```
+ This shows basically no difference between the groups. 
+ We try to see what is happening with a survival curve
+ 
+
+Then we create a survival object with the survival package and make a kaplan-meier curve
+```{r}
+data$status <- rep(1,29)
+data$Survobj <- with(data,Surv(data$Ctmax, event = data$status))
+km <- survfit(Survobj ~ Temp, data = data,conf.type = "log-log")
+plot(km, col = c("blue","red"), xlim = c(30,42) ) 
+legend("bottomleft",legend = c("13","20" ), col = c("blue","red"), lwd=1)
+```
+Which also don`t show any meaningful difference between the groups
+Now we test for difference between the curves with both log-rank and gehan-wilcoxon
+
+```{r}
+survdiff(Survobj ~Temp, data = data, rho = 0) 
+survdiff(Survobj ~Temp, data = data, rho = 1) 
+```
+
+Which both don`t find a significant difference between the groups 
+But we can make a nicer survival curve with a different package survminer 
+and add readable confidence intervals
+
+```{r}
+ggsurvplot(km,data = data, conf.int = TRUE, ggtheme = theme_bw(),
+           xlim = c(30,42), xlab = "CTmax")
+```
+
+Whic very clearly shows that the problem is that the two lines are far to close 
+together.
