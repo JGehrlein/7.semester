@@ -2,7 +2,10 @@
 title: "Analysis_ramping"
 author: "Jonas Gehrlein"
 date: "29 okt 2018"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -15,9 +18,9 @@ code for fitting Kaplan-Meier and log-rank test and for displaying
 survival curves for each type of media
 
 ```{r}
-here()
-data <- read.table(here('data','Ramp_9days.csv'), header = TRUE, sep = ";", dec = ",")
+data <- read.table(here('data','Ramp_4days.csv'), header = TRUE, sep = ";", dec = ",")
 head(data)
+data <- data[,1:3]
 data <- data[complete.cases(data),]
 ```
 
@@ -26,7 +29,7 @@ here() should show that your position is in the folder 7.semester else either do
 One fly died from water entering the tube and is marked NA so it is removed.
 Or make a new .Rproj file in the folder 7.semester. There is a problem with the numbers of the  so we change that with col.names()
 ```{r}
-colnames(data)<-c('ID',"Code","Ctmax","Temp")
+colnames(data)<-c('ID',"Ctmax","Temp")
 head(data)
 ```
 We then compare the two acclimation temperatures first with a boxplot
@@ -39,7 +42,7 @@ boxplot(data$Ctmax ~ data$Temp)
 
 Then we create a survival object with the survival package and make a kaplan-meier curve
 ```{r}
-data$status <- rep(1,29)
+data$status <- rep(1,75)
 data$Survobj <- with(data,Surv(data$Ctmax, event = data$status))
 km <- survfit(Survobj ~ Temp, data = data,conf.type = "log-log")
 plot(km, col = c("blue","red"), xlim = c(30,42) ) 
