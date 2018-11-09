@@ -1,0 +1,73 @@
+---
+title: "Survival"
+author: "Jonas Gehrlein"
+date: "24 okt 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival) 
+library(here)
+library(survminer)
+```
+code for fitting Kaplan-Meier and log-rank test and for displaying 
+survival curves for each type of media
+
+```{r}
+data <- read.table(here('data','Worm_9days.csv'), header = TRUE, sep = ";", dec = ",")
+head(data)
+```
+
+here() should show that your position is in the folder 7.semester else select the active project to be 7.semester in the upper right corner. 
+
+Or make a new .Rproj file in the folder 7.semester. There is a problem with the numbers of the worms so we change that with col.names()
+```{r}
+colnames(data)<-c("Time","status","media",'Replicate')
+head(data)
+```
+
+Then we create a survival object with the survival package and make a kaplan-meier curve
+```{r}
+data$Survobj <- with(data,Surv(data$Time, event = data$status))
+km <- survfit(Survobj ~ media, data = data,conf.type = "log-log")
+plot(km, col = c("blue","red") ) 
+legend("bottomleft",legend = c("FG20","OP50" ), col = c("blue","red"), lwd=1)
+```
+
+Now we test for difference between the curves with both log-rank and gehan-wilcoxon
+
+```{r}
+survdiff(Survobj ~media, data = data, rho = 0) 
+survdiff(Survobj ~media, data = data, rho = 1) 
+```
+
+Which both don`t find a significant difference between the groups But we can make a nicer survival curve with a different package survminer and add readable confidence intervals
+
+```{r}
+ggsurvplot(km,data = data, conf.int = TRUE, ggtheme = theme_bw(),
+           risk.table = 0.25)
+```
+
+We then try to split up in replicates to see if there are any differences
+between scorers
+
+```{r}
+d1 <- data[data$Replicate == 1,]
+d2 <- data[data$Replicate == 2,]
+d1$Survobj <- with(d1,Surv(d1$Time, event = d1$status))
+d2$Survobj <- with(d2,Surv(d2$Time, event = d2$status))
+```
+
+Then we make kaplan-meier curves
+
+```{r}
+par(mfrow = c(1,2))
+km1 <- survfit(Survobj ~ media, data = d1,conf.type = "log-log")
+plot(km1, col = c("blue","red") ) 
+legend("bottomleft",legend = c("FG20","OP50" ), col = c("blue","red"), lwd=1)
+km2 <- survfit(Survobj ~ media, data = d2,conf.type = "log-log")
+plot(km2, col = c("blue","red") ) 
+legend("bottomleft",legend = c("FG20","OP50" ), col = c("blue","red"), lwd=1)
+```
+
