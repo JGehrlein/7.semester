@@ -39,24 +39,18 @@ legend("bottomleft",legend = c("FG20","OP50" ), col = c("blue","red"), lwd=1)
 ```
 
 Shows errorbars and lineplot based on one of Anders papers https://onlinelibrary.wiley.com/doi/full/10.1111/acel.12165
-This is done by extracting the surviving proportion, standard errors from survfit().  and then plotting with base r
+This is done by extracting the surviving proportion, standard errors from survfit().  and adding a startpoint where the survival is 100% at 0 hours.
+
 ```{r}
-df_fly <- data.frame(km$time[1:5],km$surv[1:5],km$std.err[1:5])
+df_fly <- data.frame(c(0,km$time[1:5]),c(1,km$surv[1:5]),c(0,km$std.err[1:5]))
 colnames(df_fly) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(km$time[6:10],km$surv[6:10],km$std.err[6:10])
+df_OP50 <- data.frame(c(0,km$time[6:10]),c(1,km$surv[6:10]),c(0,km$std.err[6:10]))
 colnames(df_OP50) <- c('Time','Surv','Std.error')
-Time<- c(0,df_fly$Time)
-Surv <- c(1,df_fly$Surv)
-Std.error <- c(0,df_fly$Std.error)
-df_fly <- data.frame(Time,Surv,Std.error)
-Time<- c(0,df_OP50$Time)
-Surv <- c(1,df_OP50$Surv)
-Std.error <- c(0,df_OP50$Std.error)
-df_OP50 <- data.frame(Time,Surv,Std.error)
+
 plot(df_fly$Time[2:6],df_fly$Surv[2:6], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival Heat stress for'~italic(C. elegans)),
-     xlim = c(0,13), ylim = c(0,1))
+     main = expression('Survival heat stress for'~italic(C.elegans)),
+     xlim = c(0,16), ylim = c(0,1), xaxp = c(0,16,16))
 lines(df_fly$Time,df_fly$Surv)
 arrows(df_fly$Time, df_fly$Surv-df_fly$Std.error, df_fly$Time, 
        df_fly$Surv+df_fly$Std.error, length=0.05, angle=90, code=3, col = 'black')
@@ -65,9 +59,14 @@ lines(df_OP50$Time,df_OP50$Surv, lty = 2)
 arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
       df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
       length=0.05, angle=90, code=3, col = 'black')
-legend('bottomleft', pch = c(16,1),lty = c(1,2), 
+legend('topright', pch = c(16,1),lty = c(1,2), 
        legend = c(expression('Fly gut 13'*degree*C),
                   expression(italic(E.coli) ~ OP50)), bty = 'n')
+```
+
+
+```{r}
+
 ```
 
 Now we test for difference between the curves with both log-rank and gehan-wilcoxon
