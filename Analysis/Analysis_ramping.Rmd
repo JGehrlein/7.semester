@@ -14,11 +14,11 @@ library(survival)
 library(here)
 library(survminer)
 ```
-code for fitting Kaplan-Meier and log-rank test and for displaying 
-survival curves for each type of media
 
+First we download the data and remove embty columns
 ```{r}
-data <- read.table(here('data','Ramp_4days.csv'), header = TRUE, sep = ";", dec = ",")
+data <- read.table(here('data','Ramp_4days.csv'), header = TRUE, 
+                   sep = ";", dec = ",")
 head(data)
 data <- data[,1:3]
 data <- data[complete.cases(data),]
@@ -34,10 +34,12 @@ head(data)
 ```
 We then compare the two acclimation temperatures first with a boxplot
 ```{r}
-boxplot(data$Ctmax ~ data$Temp)
+boxplot(data$Ctmax ~ data$Temp, xlab = 'Acclimation Temperature',
+        ylab = 'CTmax', 
+        main = expression('CTmax for' ~italic(D.melanogaster) ~ 'acclimated to 13 or 20 degrees' ))
 ```
- This shows basically no difference between the groups. 
- We try to see what is happening with a survival curve
+ This shows a difference in median Ctmax. To look more finegrained at
+ the distribution of CTmax we use a survival curve
  
 
 Then we create a survival object with the survival package and make a kaplan-meier curve
@@ -45,25 +47,24 @@ Then we create a survival object with the survival package and make a kaplan-mei
 data$status <- rep(1,75)
 data$Survobj <- with(data,Surv(data$Ctmax, event = data$status))
 km <- survfit(Survobj ~ Temp, data = data,conf.type = "log-log")
-plot(km, col = c("blue","red"), xlim = c(30,42) ) 
-legend("bottomleft",legend = c("13","20" ), col = c("blue","red"), lwd=1)
 ```
-Which also don`t show any meaningful difference between the groups
-Now we test for difference between the curves with both log-rank and gehan-wilcoxon
+Which shows a clear difference
 
 ```{r}
 survdiff(Survobj ~Temp, data = data, rho = 0) 
 survdiff(Survobj ~Temp, data = data, rho = 1) 
+fit <- coxph(Surv(Ctmax,status) ~Temp, data = data)
+summary(fit)
 ```
 
-Which both don`t find a significant difference between the groups 
+Which both find a significant difference between the groups 
 But we can make a nicer survival curve with a different package survminer 
 and add readable confidence intervals
 
 ```{r}
 ggsurvplot(km,data = data, conf.int = TRUE, ggtheme = theme_bw(),
-           xlim = c(30,42), xlab = "CTmax")
+           xlim = c(37,42), xlab = "CTmax", palette = 'aaas',
+           break.x.by = 1, surv.median.line = 'hv')
 ```
 
-Whic very clearly shows that the problem is that the two lines are far to close 
-together.
+Which very clearly shows the difference between the different acclimation temperatures
