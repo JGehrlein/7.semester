@@ -20,30 +20,44 @@ library(phytools)
 
 
 ```{r cars}
-otutable <- read.delim('otutable.txt',header = TRUE, check.names = FALSE)
-
-metadata <- read.table('samples',check.names = FALSE)
-unifrac <- read.table('OTUS.unweighted_unifrac.txt')
-wunifrac <- read.table('OTUS.weighted_unifrac.txt')
+otutable <- read.delim(here('data','Fly_paper','otutable.txt'),header = TRUE, check.names = FALSE)
+metadata <- read.table(here('data','Fly_paper','metadata.txt'),check.names = FALSE, sep = '\t', header = TRUE)
+unifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.unweighted_unifrac.txt'))
+wunifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.weighted_unifrac.txt'))
 ```
 
 ```{r}
 data <- amp_load(otutable = otutable, metadata = metadata)
+col_v <- c(colnames(metadata[,5:10]))
+p <- rep(NA, 12)
+for (i in col_v){
+  data$abund <- unifrac
+NMDS_u <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0, sample_color_by = i)
+NMDS_u$plot
+
+data$abund <- wunifrac
+NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      sample_color_by = i)
+NMDS_w
+}
 data$abund <- unifrac
 NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      species_plot = TRUE, filter_species = 0)
+                      filter_species = 0, sample_color_by = 'Sample_Type')
 NMDS$plot
-m <- data$abund
+
 data$abund <- wunifrac
 NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      filter_species = 0)
+                      filter_species = 0,sample_color_by = 'Sample_Type')
 NMDS$plot
-k <- data$abund
-m == k
 ```
 
 ```{r}
