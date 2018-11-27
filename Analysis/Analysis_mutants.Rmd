@@ -48,32 +48,31 @@ ggsurvplot(km_RRF,data = d_RRF, conf.int = TRUE,
 ```
 
 ```{r}
-df_fly_13 <- data.frame(c(0,s_km_RRF$time[1:6]),c(1,s_km_RRF$surv[1:6]),                        c(0,s_km_RRF$std.err[1:6]))
-colnames(df_fly_13) <- c('Time','Surv','Std.error')
-df_fly_20 <- data.frame(c(0,s_km_RRF$time[7:11])
+df_fly_13_r <- data.frame(c(0,s_km_RRF$time[1:6]),c(1,s_km_RRF$surv[1:6]),                        c(0,s_km_RRF$std.err[1:6]))
+colnames(df_fly_13_r) <- c('Time','Surv','Std.error')
+df_fly_20_r <- data.frame(c(0,s_km_RRF$time[7:11])
                         ,c(1,s_km_RRF$surv[7:11]),    c(0,s_km_RRF$std.err[7:11]))
-colnames(df_fly_20) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(c(0,s_km_RRF$time[12:17])
+colnames(df_fly_20_r) <- c('Time','Surv','Std.error')
+df_OP50_r <- data.frame(c(0,s_km_RRF$time[12:17])
                       ,c(1,s_km_RRF$surv[12:17]),
                         c(0,s_km_RRF$std.err[12:17]))
-colnames(df_OP50) <- c('Time','Surv','Std.error')
+colnames(df_OP50_r) <- c('Time','Surv','Std.error')
 
-plot(df_fly_13$Time[2:7],df_fly_13$Surv[2:7], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_13_r$Time[2:7],df_fly_13_r$Surv[2:7], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
      main = expression('Survival heat stress for'~italic(C.elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
+lines(df_fly_13_r$Time,df_fly_13_r$Surv)
+arrows(df_fly_13_r$Time, df_fly_13_r$Surv-df_fly_13_r$Std.error, df_fly_13_r$Time, 
+       df_fly_13_r$Surv+df_fly_13_r$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50_r$Time[2:9],df_OP50_r$Surv[2:9], pch = 1, cex = 1.2)
+lines(df_OP50_r$Time,df_OP50_r$Surv, lty = 2)
+arrows(df_OP50_r$Time, df_OP50_r$Surv-df_OP50_r$Std.error,
+      df_OP50_r$Time, df_OP50_r$Surv+df_OP50_r$Std.error, 
       length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_20_r$Time[2:9],df_fly_20_r$Surv[2:9], pch = 6)
+lines(df_fly_20_r$Time,df_fly_20_r$Surv,lty = 3)
+arrows(df_fly_20_r$Time, df_fly_20_r$Surv-df_fly_20_r$Std.error, df_fly_20_r$Time,df_fly_20_r$Surv+df_fly_20_r$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
        legend = c(expression('Fly gut 13'*degree*C),
                   expression('Fly gut 20'*degree*C),
@@ -92,35 +91,33 @@ ggsurvplot(km_PMK,data = d_PMK, conf.int = TRUE,
 ```
 
 ```{r}
-df_fly_13 <- data.frame(c(0,s_km_PMK$time[1:5]),
+df_fly_13_P <- data.frame(c(0,s_km_PMK$time[1:5]),
                         c(1,s_km_PMK$surv[1:5]),
                         c(0,s_km_PMK$std.err[1:5]))
-colnames(df_fly_13) <- c('Time','Surv','Std.error')
-df_fly_20 <- data.frame(c(0,s_km_PMK$time[6:10]),
+colnames(df_fly_13_P) <- c('Time','Surv','Std.error')
+df_fly_20_P <- data.frame(c(0,s_km_PMK$time[6:10]),
                         c(1,s_km_PMK$surv[6:10]),
                         c(0,s_km_PMK$std.err[6:10]))
-colnames(df_fly_20) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(c(0,s_km_PMK$time[11:17]),
+colnames(df_fly_20_P) <- c('Time','Surv','Std.error')
+df_OP50_P <- data.frame(c(0,s_km_PMK$time[11:17]),
                       c(1,s_km_PMK$surv[11:17]),
                         c(0,s_km_PMK$std.err[11:17]))
-colnames(df_OP50) <- c('Time','Surv','Std.error')
+colnames(df_OP50_P) <- c('Time','Surv','Std.error')
 
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_13_P$Time[2:9],df_fly_13_P$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
      main = expression('Survival heat stress for'~italic(C.elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
+lines(df_fly_13_P$Time,df_fly_13_P$Surv)
+arrows(df_fly_13_P$Time, df_fly_13_P$Surv-df_fly_13_P$Std.error, df_fly_13_P$Time,df_fly_13_P$Surv+df_fly_13_P$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50_P$Time[2:9],df_OP50_P$Surv[2:9], pch = 1, cex = 1.2)
+lines(df_OP50_P$Time,df_OP50_P$Surv, lty = 2)
+arrows(df_OP50_P$Time, df_OP50_P$Surv-df_OP50_P$Std.error,
+      df_OP50_P$Time, df_OP50_P$Surv+df_OP50_P$Std.error, 
       length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_20_P$Time[2:9],df_fly_20_P$Surv[2:9], pch = 6)
+lines(df_fly_20_P$Time,df_fly_20_P$Surv,lty = 3)
+arrows(df_fly_20_P$Time, df_fly_20_P$Surv-df_fly_20_P$Std.error, df_fly_20_P$Time,df_fly_20_P$Surv+df_fly_20_P$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
        legend = c(expression('Fly gut 13'*degree*C),
                   expression('Fly gut 20'*degree*C),
@@ -139,35 +136,33 @@ ggsurvplot(km_DAF,data = d_DAF, conf.int = TRUE,
 ```
 
 ```{r}
-df_fly_13 <- data.frame(c(0,s_km_DAF$time[1:3]),
+df_fly_13_d <- data.frame(c(0,s_km_DAF$time[1:3]),
                         c(1,s_km_DAF$surv[1:3]),
                         c(0,s_km_DAF$std.err[1:3]))
-colnames(df_fly_13) <- c('Time','Surv','Std.error')
-df_fly_20 <- data.frame(c(0,s_km_DAF$time[4:8]),
+colnames(df_fly_13_d) <- c('Time','Surv','Std.error')
+df_fly_20_d <- data.frame(c(0,s_km_DAF$time[4:8]),
                         c(1,s_km_DAF$surv[4:8]),
                         c(0,s_km_DAF$std.err[4:8]))
-colnames(df_fly_20) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(c(0,s_km_DAF$time[9:15]),
+colnames(df_fly_20_d) <- c('Time','Surv','Std.error')
+df_OP50_d <- data.frame(c(0,s_km_DAF$time[9:15]),
                       c(1,s_km_DAF$surv[9:15]),
                         c(0,s_km_DAF$std.err[9:15]))
-colnames(df_OP50) <- c('Time','Surv','Std.error')
+colnames(df_OP50_d) <- c('Time','Surv','Std.error')
 
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_13_d$Time[2:9],df_fly_13_d$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
      main = expression('Survival heat stress for'~italic(C.elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
+lines(df_fly_13_d$Time,df_fly_13_d$Surv)
+arrows(df_fly_13_d$Time, df_fly_13_d$Surv-df_fly_13_d$Std.error, df_fly_13_d$Time,df_fly_13_d$Surv+df_fly_13_d$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50_d$Time[2:9],df_OP50_d$Surv[2:9], pch = 1, cex = 1.2)
+lines(df_OP50_d$Time,df_OP50_d$Surv, lty = 2)
+arrows(df_OP50_d$Time, df_OP50_d$Surv-df_OP50_d$Std.error,
+      df_OP50_d$Time, df_OP50_d$Surv+df_OP50_d$Std.error, 
       length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_20_d$Time[2:9],df_fly_20_d$Surv[2:9], pch = 6)
+lines(df_fly_20_d$Time,df_fly_20_d$Surv,lty = 3)
+arrows(df_fly_20_d$Time, df_fly_20_d$Surv-df_fly_20_d$Std.error, df_fly_20_d$Time,df_fly_20_d$Surv+df_fly_20_d$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
        legend = c(expression('Fly gut 13'*degree*C),
                   expression('Fly gut 20'*degree*C),
@@ -245,131 +240,148 @@ Then we do a check on the proportional hazard assumption
 prop_both <- cox.zph(fit_both)
 prop_int <- cox.zph(fit_int)
 plot(prop_both)
-plot(prob_int)
+plot(prop_int)
 ```
+Both schoenfield residuals and the test is not significant so we proceed as if the assumptions is true for our dataset.
 
 Then we plot predictions for both models
 ```{r}
-plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue')
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue',
+     main = 'Predictions for model without interactions OP50')
 lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'OP50')), col = 'firebrick')
 lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty =3)
-plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue')
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue',
+     main = 'Predictions for model with interactions OP50')
 lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'OP50')), col = 'firebrick')
 lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty =3)
-```
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'FG13')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model without interactions FG13',
+     xlab = 'hours heat stress')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'FG13')), col = 'firebrick')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'FG13')), lty =3)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'FG13')), lty = 2, xaxp = c(0,18,18), col = 'blue',
+     main = 'Predictions for model with interactions FG13')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'FG13')), col = 'firebrick')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'FG13')), lty =3)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model without interactions FG20',
+     xlab = 'hours heat stress')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'FG20')), col = 'firebrick')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'FG20')), lty =3)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'FG20')), lty = 2, xaxp = c(0,18,18), col = 'blue',
+     main = 'Predictions for model with interactions FG20')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'FG20')), col = 'firebrick')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'FG20')), lty =3)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
 
-Both schoenfield residuals and the test is not significant so we proceed as if the assumptions is true for our dataset.
+```
+We check how well predictions line up with reality
 
 ```{r}
-d_OP50 <- data[data$media == 'OP50',]
-d_13 <- data[data$media == "FG13",]
-d_20 <- data[data$media == "FG20",]
-d_fly <- rbind(d_13, d_20)
-d_2050 <- rbind(d_20, d_OP50)
-d_1350 <- rbind(d_13, d_OP50)
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model without interactions OP50')
+points(df_OP50_r$Time,df_OP50_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty = 2, col = 'black',)
+points(df_OP50_d$Time,df_OP50_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'OP50')), lty = 2, col = 'firebrick',)
+points(df_OP50_P$Time,df_OP50_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
 ```
-
-First tests for each combination first fly media
-
-```{r}
-survdiff(Surv(Time,status) ~ media, data = d_fly, rho = 0)
-survdiff(Surv(Time,status) ~ media, data = d_fly, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_fly)
-summary(fit)
-```
-
-Then 20 degrees and OP50
-```{r}
-survdiff(Surv(Time,status) ~ media, data = d_2050, rho = 0)
-survdiff(Surv(Time,status) ~ media, data = d_2050, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_2050)
-summary(fit)
-```
-
-Then for 13 degrees and OP50
-```{r}
-survdiff(Surv(Time,status) ~ media, data = d_1350, rho = 0)
-survdiff(Surv(Time,status) ~ media, data = d_1350, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_1350)
-summary(fit)
-```
-
- Where only 20 degrees and 13 degrees are significantly different from each other. But there is also some difference between 20 degrees and OP50. Where there isn´t a big difference between 13 degrees and
- OP50.
- 
- Then dose response curves with first the two fly media.
- 
-```{r}
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
-     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
-legend('topright', pch = c(16,6),lty = c(1,3), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C)), bty = 'n')
-```
-
-Than 20 degrees and OP50
+Fit is very bad as is clear both concordance and R^2 from the model.
+But there is far too little uncertainty in the confidence intervals. Which 
+overestimates survival heavily for this group. Lets try the other model
 
 ```{r}
-plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
-     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
-      length=0.05, angle=90, code=3, col = 'black')
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 1)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
-legend('topright', pch = c(16,1),lty = c(1,2), 
-       legend = c(expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model with interactions OP50')
+points(df_OP50_r$Time,df_OP50_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty = 2, col = 'black',)
+points(df_OP50_d$Time,df_OP50_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'OP50')), lty = 2, col = 'firebrick',)
+points(df_OP50_P$Time,df_OP50_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
 ```
 
-Then 13 degrees and OP50
+ Still on the low end but a lot better. Seems that without interactions it overestimates survival on OP50.
 ```{r}
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
-     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
-      length=0.05, angle=90, code=3, col = 'black')
-legend('topright', pch = c(16,1),lty = c(1,2), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'FG13')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model with interactions FG13')
+points(df_fly_13_r$Time,df_fly_13_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'FG13')), lty = 2, col = 'black',)
+points(df_fly_13_d$Time,df_fly_13_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'FG13')), lty = 2, col = 'firebrick',)
+points(df_fly_13_P$Time,df_fly_13_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
 ```
-Then Kaplan meier curves
+
+Fits notably better 
+
 ```{r}
-km_fly <- survfit(Surv(Time,status) ~ media, data = d_fly,conf.type = "log-log", error = "greenwood")
-km_2050 <- survfit(Surv(Time,status) ~ media, data = d_2050,conf.type = "log-log", error = "greenwood")
-km_1350 <- survfit(Surv(Time,status) ~ media, data = d_1350,conf.type = "log-log", error = "greenwood")
-ggsurvplot(km_fly,data = d_fly, conf.int = TRUE,
-           ggtheme = theme_bw(),risk.table = 0.25,
-           palette ='aaas', surv.median.line = 'hv',
-           legend.title = 'Media',break.x.by = 2)
-ggsurvplot(km_2050,data = d_2050, conf.int = TRUE, 
-          ggtheme = theme_bw(), risk.table = 0.25,
-          palette ='aaas', surv.median.line = 'hv',
-          legend.title = 'Media',break.x.by = 2)
-ggsurvplot(km_1350,data = d_1350, conf.int = TRUE, 
-           ggtheme = theme_bw(),risk.table = 0.25,
-           palette ='aaas', surv.median.line = 'hv',
-           legend.title = 'Media', break.x.by = 2) 
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'FG13')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model with interactions FG13')
+points(df_fly_13_r$Time,df_fly_13_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'FG13')), lty = 2, col = 'black',)
+points(df_fly_13_d$Time,df_fly_13_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'FG13')), lty = 2, col = 'firebrick',)
+points(df_fly_13_P$Time,df_fly_13_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
 ```
+
+Change opacity on some points to fix overlap
+```{r}
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model without interactions FG20')
+points(df_fly_20_r$Time,df_fly_20_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'FG20')), lty = 2, col = 'black',)
+points(df_fly_20_d$Time,df_fly_20_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'FG20')), lty = 2, col = 'firebrick',)
+points(df_fly_20_P$Time,df_fly_20_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
+```
+
+Fitsvery bad with far too much uncertainty
+
+```{r}
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model with interactions FG20')
+points(df_fly_20_r$Time,df_fly_20_r$Surv, col = 'blue', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'FG20')), lty = 2, col = 'black',)
+points(df_fly_20_d$Time,df_fly_20_d$Surv, col = 'black', pch = 16)
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'FG13')), lty = 2, col = 'firebrick',)
+points(df_fly_20_P$Time,df_fly_20_P$Surv, col = 'firebrick', pch = 16)
+legend('topright', legend = c('rrf-3','pmk-1','daf-16'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n', pch = 16)
+```
+
+The model has a problem with catching that all worms die around the same time and may therefore overestimate survival as it fits okay until the worms start 
+dying. Some other model structure is maybe necessary or not all important covariates of survival are measured.
+
 
