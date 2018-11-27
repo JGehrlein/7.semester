@@ -228,8 +228,9 @@ survdiff(Survobj ~media + mutant, data = data, rho = 0)
 survdiff(Survobj ~media + mutant, data = data, rho = 1) 
 fit_both<- coxph(Survobj ~media + mutant, data = data)
 summary(fit_both)
-fit_int <- coxph(Survobj ~media + mutant + mutant:media, data = data)
 AIC(fit_both)
+fit_int <- coxph(Survobj ~media + mutant + mutant:media, data = data)
+AIC(fit_int)
 fit_med <- coxph(Survobj ~media, data = data)
 summary(fit_med)
 AIC(fit_med)
@@ -237,7 +238,27 @@ fit_mut <- coxph(Survobj ~mutant, data = data)
 summary(fit_mut)
 AIC(fit_mut)
 ```
-Then we compare the different groups individually
+
+Best model must include both media and mutant strain but not necessarily an interaction between them. This could be driven by few observations for FG20 in RRF-3
+Then we do a check on the proportional hazard assumption
+```{r}
+prop_both <- cox.zph(fit_both)
+prop_int <- cox.zph(fit_int)
+plot(prop_both)
+plot(prob_int)
+```
+
+Then we plot predictions for both models
+```{r}
+plot(survfit(fit_both, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'PMK', media = 'OP50')), col = 'firebrick')
+lines(survfit(fit_both, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty =3)
+plot(survfit(fit_int, newdata = data.frame(mutant = 'RRF', media = 'OP50')), lty = 2, xaxp = c(0,18,18), col = 'blue')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'PMK', media = 'OP50')), col = 'firebrick')
+lines(survfit(fit_int, newdata = data.frame(mutant = 'DAF', media = 'OP50')), lty =3)
+```
+
+Both schoenfield residuals and the test is not significant so we proceed as if the assumptions is true for our dataset.
 
 ```{r}
 d_OP50 <- data[data$media == 'OP50',]

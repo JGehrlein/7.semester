@@ -1,0 +1,51 @@
+---
+title: "Microbial diversity"
+author: "Jonas Gehrlein"
+date: "23 nov 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(vegan)
+library(here)
+library(ampvis2)
+library(rethinking)
+library(seqinr)
+library(ape)
+library(phytools)
+```
+
+## R Markdown
+
+
+```{r cars}
+otutable <- read.delim('otutable.txt',header = TRUE, check.names = FALSE)
+
+metadata <- read.table('samples',check.names = FALSE)
+unifrac <- read.table('OTUS.unweighted_unifrac.txt')
+wunifrac <- read.table('OTUS.weighted_unifrac.txt')
+```
+
+```{r}
+data <- amp_load(otutable = otutable, metadata = metadata)
+data$abund <- unifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      species_plot = TRUE, filter_species = 0)
+NMDS$plot
+m <- data$abund
+data$abund <- wunifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0)
+NMDS$plot
+k <- data$abund
+m == k
+```
+
+```{r}
+```
+
