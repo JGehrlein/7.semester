@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(vegan)
 library(here)
 library(ampvis2)
-library(rethinking)
 library(seqinr)
 library(ape)
 library(phytools)
@@ -29,34 +28,73 @@ wunifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.weighted_un
 ```{r}
 data <- amp_load(otutable = otutable, metadata = metadata)
 col_v <- c(colnames(metadata[,5:10]))
-p <- rep(NA, 12)
-for (i in col_v){
   data$abund <- unifrac
 NMDS_u <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = i)
+                      filter_species = 0, sample_color_by = col_v[1])
 NMDS_u$plot
 
 data$abund <- wunifrac
 NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      sample_color_by = i)
-NMDS_w
-}
+                      sample_color_by = col_v[1])
+NMDS_w$plot
+
 data$abund <- unifrac
 NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = 'Sample_Type')
+                      filter_species = 0, sample_color_by = col_v[2])
 NMDS$plot
 
 data$abund <- wunifrac
 NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
                       detailed_output = TRUE, transform = 'none',
                        k = 10, try = 20, trymax = 50,
-                      filter_species = 0,sample_color_by = 'Sample_Type')
+                      filter_species = 0,sample_color_by = col_v[2])
+NMDS$plot
+
+data$abund <- unifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0, sample_color_by = col_v[3])
+NMDS$plot
+
+data$abund <- wunifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0,sample_color_by = col_v[3])
+NMDS$plot
+
+data$abund <- unifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0, sample_color_by = col_v[4])
+NMDS$plot
+
+data$abund <- wunifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0,sample_color_by = col_v[4])
+NMDS$plot
+data$abund <- unifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0, sample_color_by = col_v[5])
+NMDS$plot
+
+data$abund <- wunifrac
+NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+                      detailed_output = TRUE, transform = 'none',
+                       k = 10, try = 20, trymax = 50,
+                      filter_species = 0,sample_color_by = col_v[5])
 NMDS$plot
 ```
 
