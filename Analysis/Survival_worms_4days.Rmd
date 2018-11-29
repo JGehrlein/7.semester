@@ -33,6 +33,8 @@ data$Survobj <- with(data,Surv(data$Time, event = data$status))
 km <- survfit(Survobj ~ media, data = data,conf.type = "log-log", error = "greenwood")
 s_km <- summary(km)
 plot(km, col = c("red","black",'blue'))
+fit <- coxph(Survobj ~ media, data = data)
+summary(fit)
 ```
 
 Shows errorbars and lineplot based on one of Anders papers https://onlinelibrary.wiley.com/doi/full/10.1111/acel.12165
@@ -102,24 +104,24 @@ First tests for each combination first fly media
 ```{r}
 survdiff(Surv(Time,status) ~ media, data = d_fly, rho = 0)
 survdiff(Surv(Time,status) ~ media, data = d_fly, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_fly)
-summary(fit)
+fit_fly <- coxph(Surv(Time,status) ~media, data = d_fly)
+summary(fit_fly)
 ```
 
 Then 20 degrees and OP50
 ```{r}
 survdiff(Surv(Time,status) ~ media, data = d_2050, rho = 0)
 survdiff(Surv(Time,status) ~ media, data = d_2050, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_2050)
-summary(fit)
+fit_2050 <- coxph(Surv(Time,status) ~media, data = d_2050)
+summary(fit_2050)
 ```
 
 Then for 13 degrees and OP50
 ```{r}
 survdiff(Surv(Time,status) ~ media, data = d_1350, rho = 0)
 survdiff(Surv(Time,status) ~ media, data = d_1350, rho = 1)
-fit <- coxph(Surv(Time,status) ~media, data = d_1350)
-summary(fit)
+fit_1350 <- coxph(Surv(Time,status) ~media, data = d_1350)
+summary(fit_1350)
 ```
 
  Where only 20 degrees and 13 degrees are significantly different from each other. But there is also some difference between 20 degrees and OP50. Where there isn´t a big difference between 13 degrees and
@@ -299,11 +301,117 @@ ggsurvplot(km2,data = data, conf.int = TRUE, ggtheme = theme_bw(),
 ```{r}
 survdiff(Survobj ~media, data = d1, rho = 0) 
 survdiff(Survobj ~media, data = d1, rho = 1) 
-fit <- coxph(Survobj ~media, data = d1)
-summary(fit)
+fit_d1 <- coxph(Survobj ~media, data = d1)
+summary(fit_d1)
 survdiff(Survobj ~media, data = d2, rho = 0) 
 survdiff(Survobj ~media, data = d2, rho = 1) 
-fit <- coxph(Survobj ~media, data = d2)
-summary(fit)
+fit_d2 <- coxph(Survobj ~media, data = d2)
+summary(fit_d2)
+```
+
+Now we use the replicate dataset
+```{r}
+data_2 <- read.table(here('data', 'worm_second.csv'), header = TRUE,
+                     sep = ';')
+head(data_2)
+colnames(data_2) <- c('Time','media','Metabolite','Status')
+data_2_rep <- subset(data_2, Metabolite == 0)
+```
+
+First we try to see if we can extend the cox model from the earlier dataset to the new one to see hoow well we can extrapolate from one dataset to  the other
+
+```{r}
+plot(survfit(fit, newdata = data.frame(media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions for model without interactions FG20',
+     xlab = 'hours heat stress')
+lines(survfit(fit, newdata = data.frame(media = 'FG13')), col = 'firebrick')
+lines(survfit(fit, newdata = data.frame(media = 'OP50')), lty =3)
+points(df_OP50$Time, df_OP50$Surv, col = 'black', pch = 16)
+points(df_fly_13$Time,df_fly_13$Surv, col = 'firebrick', pch = 16)
+points(df_fly_20$Time,df_fly_20$Surv, col = 'blue', pch = 16)
+```
+
+Here the data fits well if we do the same for the new data set.
+
+```{r}
+data_2_rep$Survobj <- with(data_2_rep,
+                           Surv(data_2_rep$Time, event = data_2_rep$Status))
+km_2 <- survfit(Survobj ~ media, data = data_2_rep,conf.type = "log-log", 
+              error = "greenwood")
+s_km_2 <- summary(km_2)
+ggsurvplot(km_2)
+fit_2 <- coxph(Survobj ~ media, data = data_2_rep)
+summary(fit_2)
+```
+We see that Fly gut 20 has extremely bad survival and our former predictions do not hold for the new dataset.
+
+If we try to plot the new data for old predictions
+
+```{r}
+df_fly_13_2 <- data.frame(c(0,s_km_2$time[1:8]),c(1,s_km_2$surv[1:8]),
+                        c(0,s_km_2$std.err[1:8]))
+colnames(df_fly_13_2) <- c('Time','Surv','Std.error')
+df_fly_20_2 <- data.frame(c(0,s_km_2$time[9:14]),c(1,s_km_2$surv[9:14]),
+                        c(0,s_km_2$std.err[9:14]))
+colnames(df_fly_20_2) <- c('Time','Surv','Std.error')
+df_OP50_2 <- data.frame(c(0,s_km_2$time[15:21]),c(1,s_km_2$surv[15:21]),
+                        c(0,s_km_2$std.err[15:21]))
+colnames(df_OP50_2) <- c('Time','Surv','Std.error')
+```
+
+```{r}
+plot(survfit(fit, newdata = data.frame(media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
+     main = 'Predictions from old model and new data points',
+     xlab = 'hours heat stress')
+lines(survfit(fit, newdata = data.frame(media = 'FG13')), col = 'firebrick')
+lines(survfit(fit, newdata = data.frame(media = 'OP50')), lty =3)
+points(df_OP50_2$Time, df_OP50_2$Surv, col = 'black', pch = 16)
+points(df_fly_13_2$Time,df_fly_13_2$Surv, col = 'firebrick', pch = 16)
+points(df_fly_20_2$Time,df_fly_20_2$Surv, col = 'blue', pch = 16)
+legend('topright', legend = c('Fly gut 20 degrees','Fly git 13 degress','OP50'), 
+        lty = c(2,1,3), col = c('blue','firebrick','black'), 
+        bty = 'n')
+```
+ Both FG13 and OP50 is slightly lower than before but the survival in F20 has cratered and this may have happened because of something which liquefied the 
+ worms on the plates.
+
+Then we compare data with standard errors with one group in each plot 
+```{r}
+plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Survival heat stress for'~italic(C.elegans)),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_fly_13$Time,df_fly_13$Surv)
+arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
+       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_13_2$Time[2:9],df_fly_13_2$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_fly_13_2$Time,df_fly_13_2$Surv, lty = 2)
+arrows(df_fly_13_2$Time, df_fly_13_2$Surv-df_fly_13_2$Std.error, df_fly_13_2$Time, df_fly_13_2$Surv+df_fly_13_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
 ```
  
+```{r}
+plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Survival heat stress for'~italic(C.elegans)),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_fly_20$Time,df_fly_20$Surv)
+arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
+       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_20_2$Time[2:9],df_fly_20_2$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_fly_20_2$Time,df_fly_20_2$Surv, lty = 2)
+arrows(df_fly_20_2$Time, df_fly_20_2$Surv-df_fly_20_2$Std.error, df_fly_20_2$Time, df_fly_20_2$Surv+df_fly_20_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+```
+ 
+```{r}
+plot(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Survival heat stress for'~italic(C.elegans) ~'OP50'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_OP50$Time,df_OP50$Surv)
+arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, 
+       df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50_2$Time[2:9],df_OP50_2$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_OP50_2$Time,df_OP50_2$Surv, lty = 2)
+arrows(df_OP50_2$Time, df_OP50_2$Surv-df_OP50_2$Std.error, df_OP50_2$Time, df_OP50_2$Surv+df_OP50_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+```
+
