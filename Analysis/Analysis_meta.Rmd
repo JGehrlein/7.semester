@@ -1,0 +1,110 @@
+---
+title: "Metabolite"
+author: "Jonas Gehrlein"
+date: "29 nov 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(survival)
+library(survminer)
+```
+
+```{r}
+data <- read.table(here('data','Worm_4days.csv'), header = TRUE,
+                   sep = ';')
+data_2 <- read.table(here('data','Worm_second.csv'), header = TRUE,
+                   sep = ';')
+colnames(data_2) <- c('Time', 'media','Metabolite', 'Status')
+data_met <- subset(data_2, Metabolite == 1)
+d_OP50 <- subset(data_2, media == 'OP50')
+```
+
+```{r}
+data_met$Survobj <- with(data_met,Surv(data_met$Time, event = data_met$Status))
+km <- survfit(Survobj ~ media, data = data_met,conf.type = "log-log", error = "greenwood")
+s_km <- summary(km)
+ggsurvplot(km, conf.int = TRUE)
+fit <- coxph(Survobj ~ media, data = data_met)
+summary(fit)
+```
+
+Alo lower survival for FG20 if only including survival and higher survival for
+OP50 which is higher than if we had compared with fly gut which isn´t only
+metabolites. If we include metabolites in a cox model without OP50
+
+```{r}
+data_2_fly <- subset(data_2, media != 'OP50' )
+data_2_fly$Survobj <- with(data_2_fly,Surv(data_2_fly$Time, event = data_2_fly$Status))
+km_fly <- survfit(Survobj ~ media + Metabolite, data = data_2_fly,conf.type = "log-log", error = "greenwood")
+ggsurvplot(km_fly)
+```
+
+No big difference on the plot between metabolite or without if we fit a model of
+both media and metabolite
+
+```{r}
+fit_fly_meta <- coxph(Survobj ~ media + Metabolite , data = data_2_fly)
+summary(fit_fly_meta)
+AIC(fit_fly_meta)
+fit_fly_med <- coxph(Survobj ~ media , data = data_2_fly)
+summary(fit_fly_med)
+AIC(fit_fly_med)
+```
+ 
+It certainly isn´t a good predictor in the model. and is centered around 0. But very uncertain about the exact size on the size of the predictor.
+The only real difference is for FG13 where metabolite has worse survival
+
+```{r}
+data_bac <- subset(data_2_fly, Metabolite == 0)
+data_bac$Survobj <- with(data_bac,Surv(data_bac$Time, event = data_bac$Status))
+km_bac <- survfit(Survobj ~ media, data = data_bac,conf.type = "log-log", error = "greenwood")
+s_km_bac <- summary(km_bac)
+
+df_13_bac <- data.frame(c(0,s_km_bac$time[1:8]),c(1,s_km_bac$surv[1:8]),
+                        c(0,s_km_bac$std.err[1:8]))
+colnames(df_13_bac) <- c('Time','Surv','Std.error')
+df_20_bac <- data.frame(c(0,s_km_bac$time[9:14]),c(1,s_km_bac$surv[9:14]),
+                        c(0,s_km_bac$std.err[9:14]))
+colnames(df_20_bac) <- c('Time','Surv','Std.error')
+
+data_meta <- subset(data_met, media != 'OP50')
+km_meta <- survfit(Survobj ~ media, data = data_meta,conf.type = "log-log", error = "greenwood")
+s_km_meta <- summary(km_meta)
+
+df_13_meta <- data.frame(c(0,s_km_meta$time[1:7]),c(1,s_km_meta$surv[1:7]),
+                        c(0,s_km_meta$std.err[1:7]))
+colnames(df_13_meta) <- c('Time','Surv','Std.error')
+df_20_meta <- data.frame(c(0,s_km_meta$time[8:14]),c(1,s_km_meta$surv[8:14]),
+                        c(0,s_km_meta$std.err[8:14]))
+colnames(df_20_meta) <- c('Time','Surv','Std.error')
+
+plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Comparision between fly gut 20 without and with living bacteria'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_13_bac$Time,df_13_bac$Surv)
+arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
+       df_13_bac$Surv+df_13_bac$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_13_meta$Time,df_13_meta$Surv, lty = 2)
+arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3, col = 'black')
+```
+
+
+```{r}
+plot(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Comparision between fly gut 20 without and with living bacteria'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_20_bac$Time,df_20_bac$Surv)
+arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_13_bac$Time[2:9], 
+       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3, col = 'black')
+points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_20_meta$Time,df_20_meta$Surv, lty = 2)
+arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3, col = 'black')
+```
+
+
