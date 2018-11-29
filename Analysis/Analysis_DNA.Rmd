@@ -18,86 +18,54 @@ library(phytools)
 ## R Markdown
 
 
-```{r cars}
+```{r}
 otutable <- read.delim(here('data','Fly_paper','otutable.txt'),header = TRUE, check.names = FALSE)
 metadata <- read.table(here('data','Fly_paper','metadata.txt'),check.names = FALSE, sep = '\t', header = TRUE)
-unifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.unweighted_unifrac.txt'))
-wunifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.weighted_unifrac.txt'))
+unifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.unweighted_unifrac.txt'),check.names = FALSE)
+wunifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.weighted_unifrac.txt'),check.names = FALSE)
+tree <- read.tree(here('data','Tree.nwk'))
 ```
 
 ```{r}
-data <- amp_load(otutable = otutable, metadata = metadata)
-col_v <- c(colnames(metadata[,5:10]))
-  data$abund <- unifrac
-NMDS_u <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+data <- amp_load(otutable = otutable, metadata = metadata, tree = tree_m)
+tree_m <- phytools::midpoint.root(tree)
+uni <- GUniFrac::GUniFrac(data$abund,tree)
+
+amp_rarecurve(data, color_by = 'Sample_Type') +
+xlim(0,50000)
+data_rare <- amp_subset_samples(data, minreads = 10000)
+
+abund <- data_rare$abund
+unifrac <- subset(unifrac, select = data_rare$metadata$Seq_ID)
+wunifrac <- subset(wunifrac, select = data_rare$metadata$Seq_ID)
+col_v <- c(colnames(metadata[,5:10]
+                    
+NMDS_u <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'unifrac',
                       detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
+                       k = 2, try = 20, trymax = 50,
                       filter_species = 0, sample_color_by = col_v[1])
 NMDS_u$plot
 
-data$abund <- wunifrac
-NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
+
+NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'wunifrac',
                       detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
+                       k = 2, try = 20, trymax = 50,
                       sample_color_by = col_v[1])
 NMDS_w$plot
 
-data$abund <- unifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = col_v[2])
-NMDS$plot
-
-data$abund <- wunifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0,sample_color_by = col_v[2])
-NMDS$plot
-
-data$abund <- unifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = col_v[3])
-NMDS$plot
-
-data$abund <- wunifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0,sample_color_by = col_v[3])
-NMDS$plot
-
-data$abund <- unifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = col_v[4])
-NMDS$plot
-
-data$abund <- wunifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0,sample_color_by = col_v[4])
-NMDS$plot
-data$abund <- unifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = col_v[5])
-NMDS$plot
-
-data$abund <- wunifrac
-NMDS <- amp_ordinate(data, type = 'NMDS', distmeasure = 'none',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 10, try = 20, trymax = 50,
-                      filter_species = 0,sample_color_by = col_v[5])
-NMDS$plot
 ```
 
 ```{r}
+data_rare$abund <- abund
+div <- amp_alphadiv(data_rare, measure = c('shannon','invsimpson','observed'),
+                    richness = TRUE)
+div$Shannon <- exp(div$Shannon)
+plot(div$ObservedOTUs, ylim = c(0,40))
+points(div$Shannon, pch = 15)
+points(div$invSimpson, pch = 16)
+?ampvis2
+ p <- ggplot(div, aes(x = Dataset, y = Chao1)) + geom_boxplot()
+ p
+ p + geom_jitter(shape = 16,  position=position_jitter(0.2))
 ```
 
