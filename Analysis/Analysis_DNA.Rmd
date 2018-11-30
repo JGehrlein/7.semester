@@ -21,24 +21,19 @@ library(phytools)
 ```{r}
 otutable <- read.delim(here('data','Fly_paper','otutable.txt'),header = TRUE, check.names = FALSE)
 metadata <- read.table(here('data','Fly_paper','metadata.txt'),check.names = FALSE, sep = '\t', header = TRUE)
-unifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.unweighted_unifrac.txt'),check.names = FALSE)
-wunifrac <- read.table(here('data','Fly_paper','beta_div_OTUS','OTUS.weighted_unifrac.txt'),check.names = FALSE)
 tree <- read.tree(here('data','Tree.nwk'))
+tree_m <- phytools::midpoint.root(tree)
 ```
 
 ```{r}
 data <- amp_load(otutable = otutable, metadata = metadata, tree = tree_m)
-tree_m <- phytools::midpoint.root(tree)
 uni <- GUniFrac::GUniFrac(data$abund,tree)
 
 amp_rarecurve(data, color_by = 'Sample_Type') +
 xlim(0,50000)
 data_rare <- amp_subset_samples(data, minreads = 10000)
 
-abund <- data_rare$abund
-unifrac <- subset(unifrac, select = data_rare$metadata$Seq_ID)
-wunifrac <- subset(wunifrac, select = data_rare$metadata$Seq_ID)
-col_v <- c(colnames(metadata[,5:10]
+col_v <- c(colnames(metadata[,5:10]))
                     
 NMDS_u <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'unifrac',
                       detailed_output = TRUE, transform = 'none',
@@ -56,7 +51,6 @@ NMDS_w$plot
 ```
 
 ```{r}
-data_rare$abund <- abund
 div <- amp_alphadiv(data_rare, measure = c('shannon','invsimpson','observed'),
                     richness = TRUE)
 div$Shannon <- exp(div$Shannon)

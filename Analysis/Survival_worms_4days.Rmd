@@ -322,13 +322,18 @@ First we try to see if we can extend the cox model from the earlier dataset to t
 
 ```{r}
 plot(survfit(fit, newdata = data.frame(media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
-     main = 'Predictions for model without interactions FG20',
+     main = 'Predictions for model and sample data',
      xlab = 'hours heat stress')
 lines(survfit(fit, newdata = data.frame(media = 'FG13')), col = 'firebrick')
 lines(survfit(fit, newdata = data.frame(media = 'OP50')), lty =3)
 points(df_OP50$Time, df_OP50$Surv, col = 'black', pch = 16)
 points(df_fly_13$Time,df_fly_13$Surv, col = 'firebrick', pch = 16)
 points(df_fly_20$Time,df_fly_20$Surv, col = 'blue', pch = 16)
+legend('topright', pch = 16,lty = c(1,3,2), 
+       col = c('firebrick','blue','black'), 
+       legend = c(expression('Fly gut 13'*degree*C),
+                  expression('Fly gut 20'*degree*C),
+                  expression(italic(E.coli) ~ OP50)), bty = 'n')
 ```
 
 Here the data fits well if we do the same for the new data set.
@@ -368,9 +373,11 @@ lines(survfit(fit, newdata = data.frame(media = 'OP50')), lty =3)
 points(df_OP50_2$Time, df_OP50_2$Surv, col = 'black', pch = 16)
 points(df_fly_13_2$Time,df_fly_13_2$Surv, col = 'firebrick', pch = 16)
 points(df_fly_20_2$Time,df_fly_20_2$Surv, col = 'blue', pch = 16)
-legend('topright', legend = c('Fly gut 20 degrees','Fly git 13 degress','OP50'), 
-        lty = c(2,1,3), col = c('blue','firebrick','black'), 
-        bty = 'n')
+legend('topright', pch = 16,lty = c(1,3,2), 
+       col = c('firebrick','blue','black'),
+       legend = c(expression('Fly gut 13'*degree*C),
+                  expression('Fly gut 20'*degree*C),
+                  expression(italic(E.coli) ~ OP50)), bty = 'n')
 ```
  Both FG13 and OP50 is slightly lower than before but the survival in F20 has cratered and this may have happened because of something which liquefied the 
  worms on the plates.
@@ -379,7 +386,7 @@ Then we compare data with standard errors with one group in each plot
 ```{r}
 plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+     main = expression('Survival for' ~ italic(C.elegans) ~' from flygut 13' ~degree*C),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_13$Time,df_fly_13$Surv)
 arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
@@ -387,12 +394,14 @@ arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time,
 points(df_fly_13_2$Time[2:9],df_fly_13_2$Surv[2:9], pch = 1, cex = 1.2) 
 lines(df_fly_13_2$Time,df_fly_13_2$Surv, lty = 2)
 arrows(df_fly_13_2$Time, df_fly_13_2$Surv-df_fly_13_2$Std.error, df_fly_13_2$Time, df_fly_13_2$Surv+df_fly_13_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(16,1),lty = c(1,2), 
+       legend = c('Old dataset', 'New dataset'), bty = 'n')
 ```
  
 ```{r}
 plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+     main = expression('Survival for' ~ italic(C.elegans) ~' from flygut 20' ~degree*C),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_20$Time,df_fly_20$Surv)
 arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
@@ -400,12 +409,14 @@ arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time,
 points(df_fly_20_2$Time[2:9],df_fly_20_2$Surv[2:9], pch = 1, cex = 1.2) 
 lines(df_fly_20_2$Time,df_fly_20_2$Surv, lty = 2)
 arrows(df_fly_20_2$Time, df_fly_20_2$Surv-df_fly_20_2$Std.error, df_fly_20_2$Time, df_fly_20_2$Surv+df_fly_20_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(16,1),lty = c(1,2), 
+       legend = c('Old dataset', 'New dataset'), bty = 'n')
 ```
  
 ```{r}
 plot(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans) ~'OP50'),
+     main = expression('Survival for' ~ italic(C.elegans) ~ 'from' ~ italic(E.coli) ~ OP50),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_OP50$Time,df_OP50$Surv)
 arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, 
@@ -413,5 +424,7 @@ arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time,
 points(df_OP50_2$Time[2:9],df_OP50_2$Surv[2:9], pch = 1, cex = 1.2) 
 lines(df_OP50_2$Time,df_OP50_2$Surv, lty = 2)
 arrows(df_OP50_2$Time, df_OP50_2$Surv-df_OP50_2$Std.error, df_OP50_2$Time, df_OP50_2$Surv+df_OP50_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(16,1),lty = c(1,2), 
+       legend = c('Old dataset', 'New dataset'), bty = 'n')
 ```
 

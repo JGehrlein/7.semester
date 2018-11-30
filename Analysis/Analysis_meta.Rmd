@@ -83,7 +83,7 @@ colnames(df_20_meta) <- c('Time','Surv','Std.error')
 
 plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Comparision between fly gut 20 without and with living bacteria'),
+     main = expression('Comparision between fly gut 13 without and with living bacteria'),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_13_bac$Time,df_13_bac$Surv)
 arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
@@ -91,10 +91,13 @@ arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time,
 points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2) 
 lines(df_13_meta$Time,df_13_meta$Surv, lty = 2)
 arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(1,16), lty = c(2,1), bty = 'n',
+       legend = c('Only metabolite','live bacteria'))
 ```
 
 
 ```{r}
+
 plot(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
      main = expression('Comparision between fly gut 20 without and with living bacteria'),
@@ -105,6 +108,48 @@ arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_13_
 points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 1, cex = 1.2) 
 lines(df_20_meta$Time,df_20_meta$Surv, lty = 2)
 arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(1,16), lty = c(2,1), bty = 'n',
+       legend = c('Only metabolite','live bacteria'))
 ```
+```{r}
+d_OP50$Survobj <- with(d_OP50,Surv(d_OP50$Time, event = d_OP50$Status))
+km_OP50 <- survfit(Survobj ~ media, data = d_OP50,conf.type = "log-log", error = "greenwood")
+s_km_OP50 <- summary(km_OP50)
 
-
+df_OP50 <- data.frame(c(0,s_km_OP50$time[1:8]),c(1,s_km_OP50$surv[1:8]),
+                        c(0,s_km_OP50$std.err[1:8]))
+colnames(df_OP50) <- c('Time','Surv','Std.error')
+plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+     ylab = 'Surviving fraction', col = 'firebrick',
+     main = expression('Comparision between fly gut 13 without and with living bacteria'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_13_bac$Time,df_13_bac$Surv, col = 'firebrick',)
+arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
+       df_13_bac$Surv+df_13_bac$Std.error, length=0.05, angle=90, code=3, 
+       col = 'firebrick')
+points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2, 
+       col = 'firebrick' ) 
+lines(df_13_meta$Time,df_13_meta$Surv, lty = 2, col = 'firebrick')
+arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3,
+       col = 'firebrick')
+points(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2,
+       col = 'blue') 
+lines(df_20_bac$Time,df_20_bac$Surv,col = 'blue')
+arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_13_bac$Time[2:9], 
+       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3, col = 'blue')
+points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 1, cex = 1.2,
+       col = 'blue') 
+lines(df_20_meta$Time,df_20_meta$Surv, lty = 2,col = 'blue')
+arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3, 
+       col = 'blue')
+points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 16, cex = 1.2) 
+lines(df_OP50$Time,df_OP50$Surv, lty = 1)
+arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3)
+legend('topright', pch = c(16,1,16,1,16), lty = c(1,2,1,2,1), bty = 'n',
+       col = c('firebrick','firebrick','blue','blue', 'black'),
+legend = c(expression('Bacteria fly gut' ~ 13*degree*C),
+           expression('Metabolite fly gut' ~ 13*degree*C),
+           expression('Bacteria fly gut' ~ 20*degree*C),
+           expression('Metabolite fly gut' ~ 20*degree*C),
+           'OP50'))
+```
