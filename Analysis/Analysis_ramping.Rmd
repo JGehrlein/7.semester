@@ -62,8 +62,11 @@ But we can make a nicer survival curve with a different package survminer
 and add readable confidence intervals
 
 ```{r}
+mycols <- c(gray.colors(4,0,0.9))
 ggsurvplot(km,data = data, conf.int = TRUE, ggtheme = theme_bw(),
-           xlim = c(37,42), xlab = "CTmax", palette = 'aaas',
+           xlim = c(37,42), xlab = 'Temperature (°C)',ylab = 'Surviving fraction',title = expression('                                Survival of' ~ italic(D.) ~ italic(melanogaster)),palette = mycols,
+           legend = c(0.8,0.86), legend.title = 'Developmental temperature',
+           legend.labs = c('13°C','20°C'),
            break.x.by = 1, surv.median.line = 'hv')
 ```
 

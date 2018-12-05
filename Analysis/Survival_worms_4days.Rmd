@@ -35,6 +35,9 @@ s_km <- summary(km)
 plot(km, col = c("red","black",'blue'))
 fit <- coxph(Survobj ~ media, data = data)
 summary(fit)
+data$media <- factor(data$media, levels = c('OP50','FG13','FG20'))
+fit <- coxph(Survobj ~ media, data = data)
+summary(fit)
 ```
 
 Shows errorbars and lineplot based on one of Anders papers https://onlinelibrary.wiley.com/doi/full/10.1111/acel.12165
@@ -51,9 +54,8 @@ df_OP50 <- data.frame(c(0,s_km$time[17:24]),c(1,s_km$surv[17:24]),
                         c(0,s_km$std.err[17:24]))
 colnames(df_OP50) <- c('Time','Surv','Std.error')
 
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time (hours)', ylab = 'Surviving fraction', 
+     main = expression('Heat knockdown survival of' ~italic(C.) ~italic(elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_13$Time,df_fly_13$Surv)
 arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
@@ -68,9 +70,8 @@ lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
 arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
        df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+       legend = c('FG13','FG20','OP50'), bty = 'n')
+
 ```
 
 Then we create a normal Kaplan-Meier curve
@@ -84,8 +85,6 @@ Now we test for difference between the curves with both log-rank and gehan-wilco
 ```{r}
 survdiff(Survobj ~media, data = data, rho = 0) 
 survdiff(Survobj ~media, data = data, rho = 1) 
-fit <- coxph(Survobj ~media, data = data)
-summary(fit)
 ```
 
 Then we compare the different groups individually
@@ -130,9 +129,9 @@ summary(fit_1350)
  Then dose response curves with first the two fly media.
  
 ```{r}
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+     main = expression('Survival of'~italic(C.) ~italic(elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_13$Time,df_fly_13$Surv)
 arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
@@ -142,16 +141,15 @@ lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
 arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
        df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,6),lty = c(1,3), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C)), bty = 'n')
+       legend = c('FG13','FG20'), bty = 'n')
 ```
 
 Than 20 degrees and OP50
 
 ```{r}
-plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+     main = expression('Survival of'~italic(C.) ~italic(elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
 lines(df_OP50$Time,df_OP50$Surv, lty = 2)
@@ -162,15 +160,14 @@ lines(df_fly_20$Time,df_fly_20$Surv,lty = 1)
 arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
        df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,1),lty = c(1,2), 
-       legend = c(expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+       legend = c('FG20', 'OP50'), bty = 'n')
 ```
 
 Then 13 degrees and OP50
 ```{r}
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
+     main = expression('Survival of'~italic(C.) ~italic(elegans)),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_13$Time,df_fly_13$Surv)
 arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
@@ -181,8 +178,7 @@ arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
       df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
       length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,1),lty = c(1,2), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+       legend = c('FG13','OP50'), bty = 'n')
 ```
 Then Kaplan meier curves
 ```{r}
@@ -204,117 +200,13 @@ ggsurvplot(km_1350,data = d_1350, conf.int = TRUE,
 ```
 
  
-We then try to split up in replicates to see if there are any differences
-between scorers
-
-```{r}
-d1 <- data[data$Replicate == 1,]
-d2 <- data[data$Replicate == 2,]
-d1$Survobj <- with(d1,Surv(d1$Time, event = d1$status))
-d2$Survobj <- with(d2,Surv(d2$Time, event = d2$status))
-```
-
-Then we make kaplan-meier curves and dose response curves
-
-```{r}
-
-km1 <- survfit(Survobj ~ media, data = d1,conf.type = "log-log")
-s_km1 <- summary(km1)
-km2 <- survfit(Survobj ~ media, data = d2,conf.type = "log-log")
-s_km2 <- summary(km2)
-df_fly_13 <- data.frame(c(0,s_km1$time[1:7]),c(1,s_km1$surv[1:7]),
-                        c(0,s_km1$std.err[1:7]))
-colnames(df_fly_13) <- c('Time','Surv','Std.error')
-df_fly_20 <- data.frame(c(0,s_km1$time[8:15]),c(1,s_km1$surv[8:15]),
-                        c(0,s_km1$std.err[8:15]))
-colnames(df_fly_20) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(c(0,s_km1$time[16:24]),c(1,s_km1$surv[16:24]),
-                        c(0,s_km1$std.err[16:24]))
-colnames(df_OP50) <- c('Time','Surv','Std.error')
-
-plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
-     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
-      length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
-legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
-
-df_fly_13 <- data.frame(c(0,s_km2$time[1:6],18),
-                        c(1,s_km2$surv[1:6],s_km2$surv[6]),
-                        c(0,s_km2$std.err[1:6],s_km2$std.err[6]))
-colnames(df_fly_13) <- c('Time','Surv','Std.error')
-df_fly_20 <- data.frame(c(0,s_km2$time[7:11]),c(1,s_km2$surv[7:11]),
-                        c(0,s_km2$std.err[7:11]))
-colnames(df_fly_20) <- c('Time','Surv','Std.error')
-df_OP50 <- data.frame(c(0,s_km2$time[12:19]),c(1,s_km2$surv[12:19]),
-                        c(0,s_km2$std.err[12:19]))
-colnames(df_OP50) <- c('Time','Surv','Std.error')
-
-plot(df_fly_13$Time[2:8],df_fly_13$Surv[2:8],
-     pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', 
-     main = expression('Survival heat stress for'~italic(C.elegans)),
-     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_fly_13$Time,df_fly_13$Surv)
-arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
-       df_fly_13$Surv+df_fly_13$Std.error, length=0.05, angle=90, code=3, col = 'black')
-points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 1, cex = 1.2)
-lines(df_OP50$Time,df_OP50$Surv, lty = 2)
-arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error,
-      df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, 
-      length=0.05, angle=90, code=3, col = 'black')
-points(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 6)
-lines(df_fly_20$Time,df_fly_20$Surv,lty = 3)
-arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
-       df_fly_20$Surv+df_fly_20$Std.error, length=0.05, angle=90, code=3, col = 'black')
-legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
-```
-
-Then kaplan meier
-```{r}
-ggsurvplot(km1,data = data, conf.int = TRUE, ggtheme = theme_bw(),
-           risk.table = 0.25, palette ='aaas', surv.median.line = 'hv',
-           legend.title = 'Media',break.x.by = 2) 
-ggsurvplot(km2,data = data, conf.int = TRUE, ggtheme = theme_bw(),
-           risk.table = 0.25, palette ='aaas', surv.median.line = 'hv',
-           legend.title = 'Media',break.x.by = 2) 
-```
- and at last some tests
- 
-```{r}
-survdiff(Survobj ~media, data = d1, rho = 0) 
-survdiff(Survobj ~media, data = d1, rho = 1) 
-fit_d1 <- coxph(Survobj ~media, data = d1)
-summary(fit_d1)
-survdiff(Survobj ~media, data = d2, rho = 0) 
-survdiff(Survobj ~media, data = d2, rho = 1) 
-fit_d2 <- coxph(Survobj ~media, data = d2)
-summary(fit_d2)
-```
 
 Now we use the replicate dataset
 ```{r}
 data_2 <- read.table(here('data', 'worm_second.csv'), header = TRUE,
                      sep = ';')
 head(data_2)
-colnames(data_2) <- c('Time','media','Metabolite','Status')
+colnames(data_2) <- c('Time','media','Metabolite','status')
 data_2_rep <- subset(data_2, Metabolite == 0)
 ```
 
@@ -323,7 +215,7 @@ First we try to see if we can extend the cox model from the earlier dataset to t
 ```{r}
 plot(survfit(fit, newdata = data.frame(media = 'FG20')), lty = 2, xaxp = c(0,18,9), col = 'blue',
      main = 'Predictions for model and sample data',
-     xlab = 'hours heat stress')
+     xlab = 'Time Hours')
 lines(survfit(fit, newdata = data.frame(media = 'FG13')), col = 'firebrick')
 lines(survfit(fit, newdata = data.frame(media = 'OP50')), lty =3)
 points(df_OP50$Time, df_OP50$Surv, col = 'black', pch = 16)
@@ -331,37 +223,57 @@ points(df_fly_13$Time,df_fly_13$Surv, col = 'firebrick', pch = 16)
 points(df_fly_20$Time,df_fly_20$Surv, col = 'blue', pch = 16)
 legend('topright', pch = 16,lty = c(1,3,2), 
        col = c('firebrick','blue','black'), 
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+       legend = c('FG13','FG20','OP50'), bty = 'n')
 ```
 
 Here the data fits well if we do the same for the new data set.
 
 ```{r}
 data_2_rep$Survobj <- with(data_2_rep,
-                           Surv(data_2_rep$Time, event = data_2_rep$Status))
+                           Surv(data_2_rep$Time, event = data_2_rep$status))
 km_2 <- survfit(Survobj ~ media, data = data_2_rep,conf.type = "log-log", 
               error = "greenwood")
 s_km_2 <- summary(km_2)
-ggsurvplot(km_2)
+plot(km_2)
 fit_2 <- coxph(Survobj ~ media, data = data_2_rep)
 summary(fit_2)
+data_2_rep$media <- factor(data_2_rep$media, c('OP50','FG13','FG20'))
+fit_2 <- coxph(Survobj ~ media, data = data_2_rep)
+summary(fit_2)
+
 ```
 We see that Fly gut 20 has extremely bad survival and our former predictions do not hold for the new dataset.
 
 If we try to plot the new data for old predictions
-
 ```{r}
+
 df_fly_13_2 <- data.frame(c(0,s_km_2$time[1:8]),c(1,s_km_2$surv[1:8]),
                         c(0,s_km_2$std.err[1:8]))
 colnames(df_fly_13_2) <- c('Time','Surv','Std.error')
 df_fly_20_2 <- data.frame(c(0,s_km_2$time[9:14]),c(1,s_km_2$surv[9:14]),
                         c(0,s_km_2$std.err[9:14]))
 colnames(df_fly_20_2) <- c('Time','Surv','Std.error')
-df_OP50_2 <- data.frame(c(0,s_km_2$time[15:21]),c(1,s_km_2$surv[15:21]),
-                        c(0,s_km_2$std.err[15:21]))
+df_OP50_2 <- data.frame(c(0,s_km_2$time[15:24]),c(1,s_km_2$surv[15:24]),
+                        c(0,s_km_2$std.err[15:24]))
 colnames(df_OP50_2) <- c('Time','Surv','Std.error')
+
+plot(df_fly_13_2$Time[2:9],df_fly_13_2$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time (hours)', 
+     ylab = 'Surviving fraction', 
+     main = expression('Survival of'~italic(C.) ~italic(elegans) ~'replicate 2' ),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_fly_13_2$Time,df_fly_13_2$Surv)
+arrows(df_fly_13_2$Time, df_fly_13_2$Surv-df_fly_13_2$Std.error, df_fly_13_2$Time, df_fly_13_2$Surv+df_fly_13_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50_2$Time[2:9],df_OP50_2$Surv[2:9], pch = 1, cex = 1.2)
+lines(df_OP50_2$Time,df_OP50_2$Surv, lty = 2)
+arrows(df_OP50_2$Time, df_OP50_2$Surv-df_OP50_2$Std.error,
+      df_OP50_2$Time, df_OP50_2$Surv+df_OP50_2$Std.error, 
+      length=0.05, angle=90, code=3, col = 'black')
+points(df_fly_20_2$Time[2:9],df_fly_20_2$Surv[2:9], pch = 6)
+lines(df_fly_20_2$Time,df_fly_20_2$Surv,lty = 3)
+arrows(df_fly_20_2$Time, df_fly_20_2$Surv-df_fly_20_2$Std.error, df_fly_20_2$Time, df_fly_20_2$Surv+df_fly_20_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
+legend('topright', pch = c(16,6,1),lty = c(1,3,2), 
+       legend = c('FG13','FG20','OP50'), bty = 'n')
+
 ```
 
 ```{r}
@@ -375,9 +287,7 @@ points(df_fly_13_2$Time,df_fly_13_2$Surv, col = 'firebrick', pch = 16)
 points(df_fly_20_2$Time,df_fly_20_2$Surv, col = 'blue', pch = 16)
 legend('topright', pch = 16,lty = c(1,3,2), 
        col = c('firebrick','blue','black'),
-       legend = c(expression('Fly gut 13'*degree*C),
-                  expression('Fly gut 20'*degree*C),
-                  expression(italic(E.coli) ~ OP50)), bty = 'n')
+       legend = c('FG13','FG20','OP50'), bty = 'n')
 ```
  Both FG13 and OP50 is slightly lower than before but the survival in F20 has cratered and this may have happened because of something which liquefied the 
  worms on the plates.
@@ -386,7 +296,7 @@ Then we compare data with standard errors with one group in each plot
 ```{r}
 plot(df_fly_13$Time[2:9],df_fly_13$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival for' ~ italic(C.elegans) ~' from flygut 13' ~degree*C),
+     main = expression('Survival of' ~ italic(C.) ~italic(elegans) ~' from flygut 13' ~degree*C),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_13$Time,df_fly_13$Surv)
 arrows(df_fly_13$Time, df_fly_13$Surv-df_fly_13$Std.error, df_fly_13$Time, 
@@ -399,9 +309,27 @@ legend('topright', pch = c(16,1),lty = c(1,2),
 ```
  
 ```{r}
+data$Group <- rep(1,length(data$Time))
+data <- cbind(data[1:3],data[5:6])
+data_2_rep$Group <- rep(2,length(data_2_rep$Time))
+data_2_rep <- cbind(data_2_rep[,1:2],data_2_rep[,4:6])
+d_OP50 <- data[data$media == 'OP50',]
+d_13 <- data[data$media == 'FG13',]
+d_20 <- data[data$media == 'FG20',]
+d_OP50_2 <- data_2_rep[data_2_rep$media == 'OP50',]
+d_13_2 <- data_2_rep[data_2_rep$media == "FG13",]
+d_20_2 <- data_2_rep[data_2_rep$media == "FG20",]
+
+fly_13 <- rbind(d_13,d_13_2)
+survdiff(Surv(Time,status) ~Group, data = fly_13, rho = 0)
+fit_fly_13 <- coxph(Surv(Time,status) ~Group, data = fly_13)
+summary(fit_fly_13)
+```
+ 
+```{r}
 plot(df_fly_20$Time[2:9],df_fly_20$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival for' ~ italic(C.elegans) ~' from flygut 20' ~degree*C),
+     main = expression('Survival of' ~ italic(C.) ~italic(elegans) ~' from FG20' ~degree*C),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_fly_20$Time,df_fly_20$Surv)
 arrows(df_fly_20$Time, df_fly_20$Surv-df_fly_20$Std.error, df_fly_20$Time, 
@@ -414,9 +342,18 @@ legend('topright', pch = c(16,1),lty = c(1,2),
 ```
  
 ```{r}
+fly_20 <- rbind(d_20,d_20_2)
+survdiff(Surv(Time,status) ~Group, data = fly_20, rho = 0)
+km_fly_20 <-survfit(Surv(Time,status) ~Group, data = fly_20)
+ggsurvplot(km_fly_20, conf.int = TRUE, palette = 'aaas')
+fit_fly_20 <- coxph(Surv(Time,status) ~Group, data = fly_20)
+summary(fit_fly_20)
+```
+ 
+```{r}
 plot(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
      ylab = 'Surviving fraction', 
-     main = expression('Survival for' ~ italic(C.elegans) ~ 'from' ~ italic(E.coli) ~ OP50),
+     main = expression('Survival of' ~ italic(C.) ~italic(elegans) ~ 'from OP50'),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_OP50$Time,df_OP50$Surv)
 arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, 
@@ -426,5 +363,20 @@ lines(df_OP50_2$Time,df_OP50_2$Surv, lty = 2)
 arrows(df_OP50_2$Time, df_OP50_2$Surv-df_OP50_2$Std.error, df_OP50_2$Time, df_OP50_2$Surv+df_OP50_2$Std.error, length=0.05, angle=90, code=3, col = 'black')
 legend('topright', pch = c(16,1),lty = c(1,2), 
        legend = c('Old dataset', 'New dataset'), bty = 'n')
+```
+
+```{r}
+OP50 <- rbind(d_OP50,d_OP50_2)
+survdiff(Surv(Time,status) ~Group, data = OP50, rho = 0)
+fit_OP50 <- coxph(Surv(Time,status) ~Group, data = OP50)
+summary(fit_OP50)
+```
+```{r}
+d_1350_2 <- rbind(d_OP50_2,d_13_2)
+survdiff(Surv(Time,status) ~media, data = d_1350_2)
+d_2050_2 <- rbind(d_OP50_2,d_20_2)
+survdiff(Surv(Time,status) ~media, data = d_2050_2)
+d_1320_2 <- rbind(d_13_2,d_20_2)
+survdiff(Surv(Time,status) ~media, data = d_1320_2)
 ```
 

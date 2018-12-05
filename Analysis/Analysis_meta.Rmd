@@ -17,17 +17,23 @@ data <- read.table(here('data','Worm_4days.csv'), header = TRUE,
                    sep = ';')
 data_2 <- read.table(here('data','Worm_second.csv'), header = TRUE,
                    sep = ';')
-colnames(data_2) <- c('Time', 'media','Metabolite', 'Status')
+colnames(data_2) <- c('Time', 'media','Metabolite', 'status')
 data_met <- subset(data_2, Metabolite == 1)
 d_OP50 <- subset(data_2, media == 'OP50')
 ```
 
 ```{r}
-data_met$Survobj <- with(data_met,Surv(data_met$Time, event = data_met$Status))
+data_met$Survobj <- with(data_met,Surv(data_met$Time, event = data_met$status))
+d_OP50$Survobj <- with(d_OP50,Surv(d_OP50$Time, event = d_OP50$status))
+
 km <- survfit(Survobj ~ media, data = data_met,conf.type = "log-log", error = "greenwood")
 s_km <- summary(km)
 ggsurvplot(km, conf.int = TRUE)
-fit <- coxph(Survobj ~ media, data = data_met)
+data_met_50 <- rbind(data_met, d_OP50)
+fit <- coxph(Surv(Time,status) ~ media, data = data_met_50)
+summary(fit)
+data_met_50$media <- factor(data_met_50$media, c('OP50','FG13','FG20'))
+fit <- coxph(Surv(Time,status) ~ media, data = data_met_50)
 summary(fit)
 ```
 
@@ -37,7 +43,7 @@ metabolites. If we include metabolites in a cox model without OP50
 
 ```{r}
 data_2_fly <- subset(data_2, media != 'OP50' )
-data_2_fly$Survobj <- with(data_2_fly,Surv(data_2_fly$Time, event = data_2_fly$Status))
+data_2_fly$Survobj <- with(data_2_fly,Surv(data_2_fly$Time, event = data_2_fly$status))
 km_fly <- survfit(Survobj ~ media + Metabolite, data = data_2_fly,conf.type = "log-log", error = "greenwood")
 ggsurvplot(km_fly)
 ```
@@ -59,7 +65,7 @@ The only real difference is for FG13 where metabolite has worse survival
 
 ```{r}
 data_bac <- subset(data_2_fly, Metabolite == 0)
-data_bac$Survobj <- with(data_bac,Surv(data_bac$Time, event = data_bac$Status))
+data_bac$Survobj <- with(data_bac,Surv(data_bac$Time, event = data_bac$status))
 km_bac <- survfit(Survobj ~ media, data = data_bac,conf.type = "log-log", error = "greenwood")
 s_km_bac <- summary(km_bac)
 
@@ -81,9 +87,9 @@ df_20_meta <- data.frame(c(0,s_km_meta$time[8:14]),c(1,s_km_meta$surv[8:14]),
                         c(0,s_km_meta$std.err[8:14]))
 colnames(df_20_meta) <- c('Time','Surv','Std.error')
 
-plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
      ylab = 'Surviving fraction', 
-     main = expression('Comparision between fly gut 13 without and with living bacteria'),
+     main = expression('Comparision between FG13 without and with living bacteria'),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_13_bac$Time,df_13_bac$Surv)
 arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
@@ -98,9 +104,9 @@ legend('topright', pch = c(1,16), lty = c(2,1), bty = 'n',
 
 ```{r}
 
-plot(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
+plot(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
      ylab = 'Surviving fraction', 
-     main = expression('Comparision between fly gut 20 without and with living bacteria'),
+     main = expression('Comparision between FG20 without and with living bacteria'),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
 lines(df_20_bac$Time,df_20_bac$Surv)
 arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_13_bac$Time[2:9], 
@@ -112,44 +118,123 @@ legend('topright', pch = c(1,16), lty = c(2,1), bty = 'n',
        legend = c('Only metabolite','live bacteria'))
 ```
 ```{r}
-d_OP50$Survobj <- with(d_OP50,Surv(d_OP50$Time, event = d_OP50$Status))
+d_OP50$Survobj <- with(d_OP50,Surv(d_OP50$Time, event = d_OP50$status))
 km_OP50 <- survfit(Survobj ~ media, data = d_OP50,conf.type = "log-log", error = "greenwood")
 s_km_OP50 <- summary(km_OP50)
 
 df_OP50 <- data.frame(c(0,s_km_OP50$time[1:8]),c(1,s_km_OP50$surv[1:8]),
                         c(0,s_km_OP50$std.err[1:8]))
 colnames(df_OP50) <- c('Time','Surv','Std.error')
-plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Heatstress (hours)', 
-     ylab = 'Surviving fraction', col = 'firebrick',
-     main = expression('Comparision between fly gut 13 without and with living bacteria'),
+plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time (hours)', 
+     ylab = 'Surviving fraction', col = 'blue',
+     main = expression('Heat knockdown survival of' ~ italic(C.)~italic(elegans)~ 'replicate 2'),
      xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
-lines(df_13_bac$Time,df_13_bac$Surv, col = 'firebrick',)
+lines(df_13_bac$Time,df_13_bac$Surv, col = 'blue')
 arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
        df_13_bac$Surv+df_13_bac$Std.error, length=0.05, angle=90, code=3, 
-       col = 'firebrick')
-points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2, 
-       col = 'firebrick' ) 
-lines(df_13_meta$Time,df_13_meta$Surv, lty = 2, col = 'firebrick')
-arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3,
-       col = 'firebrick')
-points(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2,
-       col = 'blue') 
-lines(df_20_bac$Time,df_20_bac$Surv,col = 'blue')
-arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_13_bac$Time[2:9], 
-       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3, col = 'blue')
-points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 1, cex = 1.2,
-       col = 'blue') 
-lines(df_20_meta$Time,df_20_meta$Surv, lty = 2,col = 'blue')
-arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3, 
        col = 'blue')
+points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2, 
+       col = 'blue' ) 
+lines(df_13_meta$Time,df_13_meta$Surv, lty = 2, col = 'blue')
+arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3,
+       col = 'blue')
+points(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2,
+       col = 'firebrick') 
+lines(df_20_bac$Time,df_20_bac$Surv,col = 'firebrick')
+arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_20_bac$Time[2:9], 
+       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3, col = 'firebrick')
+points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 1, cex = 1.2,
+       col = 'firebrick') 
+lines(df_20_meta$Time,df_20_meta$Surv, lty = 2,col = 'firebrick')
+arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3, 
+       col = 'firebrick')
 points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 16, cex = 1.2) 
 lines(df_OP50$Time,df_OP50$Surv, lty = 1)
 arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3)
 legend('topright', pch = c(16,1,16,1,16), lty = c(1,2,1,2,1), bty = 'n',
-       col = c('firebrick','firebrick','blue','blue', 'black'),
-legend = c(expression('Bacteria fly gut' ~ 13*degree*C),
-           expression('Metabolite fly gut' ~ 13*degree*C),
-           expression('Bacteria fly gut' ~ 20*degree*C),
-           expression('Metabolite fly gut' ~ 20*degree*C),
+       col = c('blue','blue','firebrick','firebrick', 'black'),
+legend = c('FG13','FG13 Metabolite','FG20','FG20 Metabolite',
            'OP50'))
 ```
+
+```{r}
+plot(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time (hours)', 
+     ylab = 'Surviving fraction',
+     main = expression('Heat knockdown survival of'
+                       ~ italic(C.)~italic(elegans)~ 'replicate 2'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_13_bac$Time,df_13_bac$Surv)
+arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, 
+       df_13_bac$Surv+df_13_bac$Std.error, length=0.05, angle=90, code=3)
+points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_13_meta$Time,df_13_meta$Surv, lty = 2)
+arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3)
+points(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 17, cex = 1.2) 
+lines(df_20_bac$Time,df_20_bac$Surv)
+arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_20_bac$Time[2:9], 
+       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3)
+points(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 2, cex = 1.2) 
+lines(df_20_meta$Time,df_20_meta$Surv, lty = 2)
+arrows(df_20_meta$Time, df_20_meta$Surv-df_20_meta$Std.error, df_20_meta$Time, df_20_meta$Surv+df_20_meta$Std.error, length=0.05, angle=90, code=3)
+points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 15, cex = 1.2) 
+lines(df_OP50$Time,df_OP50$Surv, lty = 1)
+arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3)
+legend('topright', pch = c(16,1,17,2,15), lty = c(1,2,1,2,1), bty = 'n',
+legend = c('FG13','FG13 Metabolite','FG20','FG20 Metabolite',
+           'OP50'))
+```
+
+```{r}
+plot(df_20_bac$Time[2:9],df_20_bac$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
+     ylab = 'Surviving fraction', 
+     main = expression('Comparision between FG20 and FG13'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_20_bac$Time,df_20_bac$Surv)
+arrows(df_20_bac$Time[2:9], df_20_bac$Surv[2:9]-df_20_bac$Std.error[2:9], df_20_bac$Time[2:9], 
+       df_20_bac$Surv[2:9]+df_20_bac$Std.error[2:9], length=0.05, angle=90, code=3, col = 'black')
+points(df_13_bac$Time[2:9],df_13_bac$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_13_bac$Time,df_13_bac$Surv, lty = 2)
+arrows(df_13_bac$Time, df_13_bac$Surv-df_13_bac$Std.error, df_13_bac$Time, df_13_bac$Surv+df_13_bac$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 6, cex = 1.2) 
+lines(df_OP50$Time,df_OP50$Surv, lty = 3)
+arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3)
+legend('topright', pch = c(1,16,6), lty = c(2,1,3), bty = 'n',
+       legend = c('FG13','FG20','OP50'))
+```
+
+```{r}
+plot(df_20_meta$Time[2:9],df_20_meta$Surv[2:9], pch = 16, cex = 1.2, xlab = 'Time Hours', 
+     ylab = 'Surviving fraction', 
+     main = expression('Comparision between FG20 and FG13 for Metabolite'),
+     xlim = c(0,22), ylim = c(0,1), xaxp = c(0,22,11))
+lines(df_20_meta$Time,df_20_meta$Surv)
+arrows(df_20_meta$Time[2:9], df_20_meta$Surv[2:9]-df_20_meta$Std.error[2:9], df_20_meta$Time[2:9], 
+       df_20_meta$Surv[2:9]+df_20_meta$Std.error[2:9], length=0.05, angle=90, code=3, col = 'black')
+points(df_13_meta$Time[2:9],df_13_meta$Surv[2:9], pch = 1, cex = 1.2) 
+lines(df_13_meta$Time,df_13_meta$Surv, lty = 2)
+arrows(df_13_meta$Time, df_13_meta$Surv-df_13_meta$Std.error, df_13_meta$Time, df_13_meta$Surv+df_13_meta$Std.error, length=0.05, angle=90, code=3, col = 'black')
+points(df_OP50$Time[2:9],df_OP50$Surv[2:9], pch = 6, cex = 1.2) 
+lines(df_OP50$Time,df_OP50$Surv, lty = 3)
+arrows(df_OP50$Time, df_OP50$Surv-df_OP50$Std.error, df_OP50$Time, df_OP50$Surv+df_OP50$Std.error, length=0.05, angle=90, code=3)
+legend('topright', pch = c(1,16,6), lty = c(2,1,3), bty = 'n',
+       legend = c('FG13','FG20','OP50'))
+```
+
+```{r}
+d_13_m <- subset(data_meta,media == 'FG13')
+d_20_m <- subset(data_meta,media == 'FG20')
+d_1350_m <- rbind(d_13_m, d_OP50)
+d_2050_m <- rbind(d_20_m,d_OP50)
+d_13_b <- subset(data_bac, media =='FG13')
+d_20_b <- subset(data_bac, media =='FG20')
+d_13_bm <- rbind(d_13_m,d_13_b)
+d_20_bm <- rbind(d_20_b,d_20_m)
+survdiff(Survobj ~ media, data = data_meta)
+survdiff(Surv(Time,status) ~ media, data = d_1350_m)
+survdiff(Surv(Time,status) ~ media, data = d_2050_m)
+fit_13_mb <- coxph(Surv(Time,status) ~Metabolite, data = d_13_bm)
+summary(fit_13_mb)
+fit_20_mb <- coxph(Surv(Time,status) ~Metabolite, data = d_20_bm)
+summary(fit_20_mb)
+```
+

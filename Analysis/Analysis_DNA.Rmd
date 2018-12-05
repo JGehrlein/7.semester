@@ -27,7 +27,6 @@ tree_m <- phytools::midpoint.root(tree)
 
 ```{r}
 data <- amp_load(otutable = otutable, metadata = metadata, tree = tree_m)
-uni <- GUniFrac::GUniFrac(data$abund,tree)
 
 amp_rarecurve(data, color_by = 'Sample_Type') +
 xlim(0,50000)
@@ -37,20 +36,22 @@ col_v <- c(colnames(metadata[,5:10]))
                     
 NMDS_u <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'unifrac',
                       detailed_output = TRUE, transform = 'none',
-                       k = 2, try = 20, trymax = 50,
-                      filter_species = 0, sample_color_by = col_v[1])
+                       k = 2, try = 20, trymax = 50, sample_color_by = col_v[2],
+                      sample_shape_by = col_v[4])
 NMDS_u$plot
 
 
-NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'wunifrac',
+NMDS_w <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'wunifrac',
                       detailed_output = TRUE, transform = 'none',
-                       k = 2, try = 20, trymax = 50,
-                      sample_color_by = col_v[1])
+                       k = 2, try = 20, trymax = 500,
+                      sample_color_by = col_v[2],
+                      sample_shape_by = col_v[3])
 NMDS_w$plot
 
 ```
 
 ```{r}
+mycols <- grey.colors(2,0,0.5)
 div <- amp_alphadiv(data_rare, measure = c('shannon','invsimpson','observed'),
                     richness = TRUE)
 div$Shannon <- exp(div$Shannon)
@@ -58,8 +59,16 @@ plot(div$ObservedOTUs, ylim = c(0,40))
 points(div$Shannon, pch = 15)
 points(div$invSimpson, pch = 16)
 ?ampvis2
- p <- ggplot(div, aes(x = Dataset, y = Chao1)) + geom_boxplot()
- p
- p + geom_jitter(shape = 16,  position=position_jitter(0.2))
+ p <- ggplot(div, aes(x = Dataset, y = Chao1, fill = Dataset)) + geom_boxplot()
+ p<- p+scale_fill_manual(values =mycols)
+ p + geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
+```
+
+
+```{r}
+he <- amp_heatmap(data_rare,group_by ='Dev_Temp', facet_by = 'Dataset',
+                  tax_aggregate = 'Genus',tax_add = 'Family',
+                  tax_empty = 'OTU')
+he
 ```
 
