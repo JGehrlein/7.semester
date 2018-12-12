@@ -2,73 +2,244 @@
 title: "Microbial diversity"
 author: "Jonas Gehrlein"
 date: "23 nov 2018"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
 library(vegan)
 library(here)
 library(ampvis2)
-library(seqinr)
 library(ape)
 library(phytools)
+library(grid)
+library(gridExtra)
+library(plyr)
 ```
 
-## R Markdown
+The general structure of the document is that first ordination is done with PCoA afterwards a heatmap is made for the different samples.
+Then a omnibus test for the different explanatory variables is performed.
+And differences in diversity are visualized. 
 
+The first chunk is only for loading data in and preparing data.
+We remove one mistaken worm sample which is from a worm on e.coli read abundance is 99.2 % Escherichia.
+These aremovals are currently commented out.
+The tree is made with MEGA 10.0 since the last tree didn´t have enouh nodes and would't fit.
 
 ```{r}
-otutable <- read.delim(here('data','Fly_paper','otutable.txt'),header = TRUE, check.names = FALSE)
-metadata <- read.table(here('data','Fly_paper','metadata.txt'),check.names = FALSE, sep = '\t', header = TRUE)
-tree <- read.tree(here('data','Tree.nwk'))
-tree_m <- phytools::midpoint.root(tree)
+otutable <- read.delim(here('data','amplicon_data','otutable_rdp.txt'),header = TRUE, check.names = FALSE)
+metadata <- read.table(here('data','amplicon_data','metadata.csv'),check.names = FALSE, sep = ';', header = TRUE)
+metadata$Temperature <- as.factor(as.character(metadata$Temperature))
+colnames(metadata) <- c('Seq_ID','Sample_ID','Sample_name','Sample_type', 'Temperature_group','Time','comment')
+metadata$Sample_type <- revalue(metadata$Sample_type, c(Worm = 'Nematode', Fly_gut = 'Fly gut')) 
+metadata <- metadata[1:18,]
+metadata <- metadata[complete.cases(metadata),]
+metadata <- metadata[metadata$Seq_ID !=  'MQ181203-41',]
+tree <- read.tree(here('data','amplicon_data','Tree.nwk'))
+tree_m <- midpoint.root(tree)
 ```
 
+Then data is loaded into ampvis and a rarefaction curve is made
 ```{r}
 data <- amp_load(otutable = otutable, metadata = metadata, tree = tree_m)
 
-amp_rarecurve(data, color_by = 'Sample_Type') +
-xlim(0,50000)
-data_rare <- amp_subset_samples(data, minreads = 10000)
+amp_rarecurve(data, color_by = 'Sample_type') +
+xlim(0,10000) + ylim(0,100)
+data_rare <- amp_subset_samples(data, minreads = 3000)
+```
 
-col_v <- c(colnames(metadata[,5:10]))
-                    
-NMDS_u <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'unifrac',
+We find the asymptote very fast for all samples. So we rarefy to the point were all samples have a stable number of OTUs
+
+We then do NMDS and PCoA with three different distance matrices (unifrac,wunifrac,bray-curtis)
+Would like to talk with you about best principle to select distance matrix.
+Currently I use the one with lowest stress for NMDS and the one with most variation explained by the axes for PCoA.
+```{r}
+NMDS_u <- amp_ordinate(data, type = 'NMDS', distmeasure = 'unifrac',
                       detailed_output = TRUE, transform = 'none',
-                       k = 2, try = 20, trymax = 50, sample_color_by = col_v[2],
-                      sample_shape_by = col_v[4])
+                       k = 5, try = 20, trymax = 1000, 
+                      y_axis = 2, x_axis = 1,
+                      sample_color_by = 'Temperature_group',
+                      sample_shape_by = 'Sample_type',
+                      sample_label_by = 'Time',
+                      sample_color_order = c('20','13'))
 NMDS_u$plot
 
-
-NMDS_w <- amp_ordinate(data_rare, type = 'NMDS', distmeasure = 'wunifrac',
-                      detailed_output = TRUE, transform = 'none',
-                       k = 2, try = 20, trymax = 500,
-                      sample_color_by = col_v[2],
-                      sample_shape_by = col_v[3])
+NMDS_w <- amp_ordinate(data, type = 'NMDS', distmeasure = 'wunifrac',
+                       sample_color_by = 'Temperature_group',
+                       sample_shape_by = 'Sample_type',
+                       y_axis = 2,x_axis = 1,sample_label_by = 'Time',
+                       sample_color_order = c('20','13'),
+                       k = 5, try = 20, trymax = 1000,
+                      detailed_output = TRUE, transform = 'none')
 NMDS_w$plot
-
 ```
 
+We then make some heatmaps to look at which species are in which samples.
+This is done without averaging samples, as far as possible. First with each combination of all metadata variables. Then for not conflating the plates and worms at different timepoints without T1 and then for both temperature groups. 
 ```{r}
-mycols <- grey.colors(2,0,0.5)
-div <- amp_alphadiv(data_rare, measure = c('shannon','invsimpson','observed'),
-                    richness = TRUE)
-div$Shannon <- exp(div$Shannon)
-plot(div$ObservedOTUs, ylim = c(0,40))
-points(div$Shannon, pch = 15)
-points(div$invSimpson, pch = 16)
-?ampvis2
- p <- ggplot(div, aes(x = Dataset, y = Chao1, fill = Dataset)) + geom_boxplot()
- p<- p+scale_fill_manual(values =mycols)
- p + geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
-```
-
-
-```{r}
-he <- amp_heatmap(data_rare,group_by ='Dev_Temp', facet_by = 'Dataset',
-                  tax_aggregate = 'Genus',tax_add = 'Family',
-                  tax_empty = 'OTU')
+he <- amp_heatmap(data, facet_by = 'Temperature_group', group_by = c('Time','Sample_type'),tax_aggregate = 'Genus',tax_add = 'Phylum',
+         tax_empty = 'best',tax_show = 30)
 he
+data_uT1 <- amp_subset_samples(data, Time != 'T1')
+data_13 <- amp_subset_samples(data, Temperature_group == '13')
+data_20 <- amp_subset_samples(data, Temperature_group == '20')
+he_uT1 <- amp_heatmap(data_uT1, facet_by = 'Temperature_group', group_by = c('Sample_type'),tax_aggregate = 'Genus',tax_add = 'Phylum',
+         tax_empty = 'best',tax_show = 30)
+he_13 <- amp_heatmap(data_13, group_by = 'Sample_type',
+                     facet_by = 'Time',tax_aggregate = 'Genus',tax_add = 'Phylum', tax_empty = 'best', tax_show = 30)
+he_20 <-amp_heatmap(data_20, group_by = 'Sample_type',
+                     facet_by = 'Time',tax_aggregate = 'Genus',tax_add = 'Phylum', tax_empty = 'best', tax_show = 30)
+he_seqid <- amp_heatmap(data, group_by ='Seq_ID',tax_aggregate = 'Genus',
+                        tax_add = 'Phylum', tax_show = 30)
+he_uT1
+he_13
+he_20
+he_seqid
 ```
 
+We see that 41 has far to much e.coli and the result is an error, it must come
+from a e.coli plate.
+
+Then we test the omnibus model with adonis2() from vegan for equality of composition between samples.
+```{r}
+d <- cbind(otutable[2:5],otutable[7:18])
+OTU <- otutable$OTU
+d <- as.data.frame(t(d))
+colnames(d) <- OTU
+betad <- betadiver(d,'z')
+an <-adonis(betad ~  Time + Sample_type + Temperature_group, data = metadata,permutations = 10000, na.rm = TRUE)
+an
+```
+
+We calculate indices and convert shannon to number of elements instead of their associated entropy
+```{r}
+data_uT1 <- amp_subset_samples(data, Time != 'T1')
+div <- amp_alphadiv(data,  measure = c('observed','shannon','invsimpson'),
+                    richness = TRUE)
+div$Evenness <- div$Shannon/div$ObservedOTUs
+div$Shannon <- exp(div$Shannon)
+div_uT1 <- amp_alphadiv(data_uT1,  measure = c('observed','shannon','invsimpson'),
+                    richness = TRUE)
+div_uT1$Evenness <- div_uT1$Shannon/div_uT1$ObservedOTUs
+div_uT1$Shannon <- exp(div_uT1$Shannon)
+```
+
+We then make a series of boxplots with points for the placement of datapoints.
+These are made for the same subgroups as was used for the heatmaps. 
+```{r}
+xlabs <- c('Fly gut','Plate','Nematode')
+boxlabeller <- list(
+  '13' = expression('13 ('*degree*C*')'),
+  '20' = expression('20 ('*degree*C*')')
+)
+box_labeller <- function(variable,value){
+  return(boxlabeller[value])
+}
+p <-ggplot(div_uT1, aes(x = Sample_type, y = ObservedOTUs)) + geom_dotplot( binaxis='y', stackdir='center', dotsize=1.5) 
+p <- p + theme(axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+p <- p + labs(y = 'OTU')
+Obs <-  p + facet_wrap(vars(Temperature_group),labeller = box_labeller)
+
+p <- ggplot(div_uT1, aes(x = Sample_type, y = Shannon)) + geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank())
+p <- p + labs(x = 'Sample Type')
+p <- p + theme( axis.title.x = element_text(size = 15))
+p <- p+ scale_x_discrete(labels = xlabs)
+Shannon <- p + facet_wrap(vars(Temperature_group))
+
+p <- ggplot(div_uT1, aes(x = Sample_type, y = Chao1 )) +  geom_dotplot(binaxis='y', stackdir='center', dotsize=1.2)
+p <- p + theme(axis.text.x = element_blank(),
+               axis.title.x = element_blank(),
+              strip.background = element_blank(),
+              strip.text.x = element_blank())
+Chao <- p + facet_wrap(vars(Temperature_group))
+
+p <- ggplot(div_uT1, aes(x = Sample_type, y = Evenness)) + geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank(),
+              axis.text.x = element_blank(),
+               axis.title.x = element_blank(),)
+p <- p + labs(x = 'Sample Type')
+p <- p+ scale_x_discrete(labels = xlabs)
+Evenness <- p + facet_wrap(vars(Temperature_group))
+grid.arrange(Obs,Chao,Evenness,Shannon, ncol = 1, nrow =4,
+             top = textGrob('Species Richness and Evenness', 
+                            gp = gpar(fontsize = 15)))
+
+div_13 <- subset(div, Temperature_group == 13)
+div_20 <- subset(div, Temperature_group == 20)
+p <- ggplot(div_13, aes(x = Sample_type, y = ObservedOTUs)) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p + theme(axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+p <- p + labs(y = 'OTU')
+Obs <-  p + facet_wrap(vars(Time))
+
+p <- ggplot(div_13, aes(x = Sample_type, y = Shannon)) +
+   geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank())
+p <- p + labs(x = 'Sample Type')
+p <- p+ scale_x_discrete(labels = xlabs)
+p <- p + theme(axis.title.x = element_text(size = 15))
+Shannon <- p + facet_wrap(vars(Time))
+p <- ggplot(div_13, aes(x = Sample_type, y = Chao1 )) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
+p <- p + theme(axis.text.x = element_blank(),
+               axis.title.x = element_blank(),
+              strip.background = element_blank(),
+              strip.text.x = element_blank())
+Chao <- p + facet_wrap(vars(Time))
+
+p <- ggplot(div_13, aes(x = Sample_type, y = Evenness)) + geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank(),
+              axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+Evenness <- p + facet_wrap(vars(Time))
+grid.arrange(Obs,Chao,Evenness,Shannon, ncol = 1, nrow =4, 
+             top = textGrob(expression(13*degree*C),
+                            gp = gpar(fontsize = 15)))
+
+p <- ggplot(div_20, aes(x = Sample_type, y = ObservedOTUs)) + 
+geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p + theme(axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+p <- p +labs(y = 'OTU')
+Obs <-  p + facet_wrap(vars(Time))
+
+p <- ggplot(div_20, aes(x = Sample_type, y = Shannon)) + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank())
+p <- p + labs(x = 'Sample Type')
+p <- p + theme( axis.title.x  = element_text(size = 15))
+p <- p+ scale_x_discrete(labels = xlabs)
+Shannon <- p + facet_wrap(vars(Time))
+
+p <- ggplot(div_20, aes(x = Sample_type, y = Chao1 )) + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
+p <- p + theme(strip.background = element_blank(),
+              strip.text.x = element_blank(),
+              axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+Chao <- p + facet_wrap(vars(Time))
+p <- ggplot(div_20, aes(x = Sample_type, y = Evenness)) + geom_dotplot(binaxis='y', stackdir='center', dotsize=1.5)
+p <- p+ theme(strip.background = element_blank(),
+              strip.text.x = element_blank(),
+              axis.text.x = element_blank(),
+               axis.title.x = element_blank())
+p <- p + labs(x = 'Sample Type')
+p <- p+ scale_x_discrete(labels = xlabs)
+Evenness <- p + facet_wrap(vars(Time))
+grid.arrange(Obs,Chao,Evenness,Shannon, ncol = 1, nrow =4, 
+             top = textGrob(expression(20*degree*C),
+                            gp = gpar(fontsize = 15)))
+
+```
